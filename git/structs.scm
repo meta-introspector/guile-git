@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2017, 2019 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2019 Marius Bakke <marius@devup.no>
@@ -30,9 +30,11 @@
                                            make-pointer
                                            pointer->bytevector
                                            pointer->string
+                                           string->pointer
                                            sizeof
                                            dereference-pointer
-                                           pointer-address))
+                                           pointer-address
+                                           void))
   #:use-module (bytestructures guile)
   #:use-module (ice-9 match)
   #:export (git-error? git-error-code git-error-message git-error-class pointer->git-error
@@ -52,6 +54,13 @@
             make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-callbacks
             fetch-options-download-tags set-fetch-options-download-tags!
             set-fetch-options-callbacks! set-remote-callbacks-credentials!
+            fetch-options-proxy-options set-fetch-options-proxy-options!
+
+            proxy-options?
+            make-proxy-options-bytestructure proxy-options-bytestructure proxy-options->pointer proxy-options-callbacks
+            proxy-options-url proxy-options-type
+            set-proxy-options-url! set-proxy-options-type!
+
 
             make-clone-options-bytestructure clone-options-bytestructure clone-options->pointer set-clone-options-fetch-opts!
 
@@ -314,6 +323,85 @@
      (pointer->diff-delta
       (make-pointer (bytestructure-ref bs 'index-to-workdir))))))
 
+;; proxy options: https://libgit2.org/libgit2/#HEAD/type/git_proxy_options
+
+(define %proxy-options
+  (bs:struct `((version ,unsigned-int)            ;GIT-PROXY-OPTIONS-VERSION
+               (type ,int)                        ;git_proxy_t enum
+               (url ,(bs:pointer void))           ;string | NULL
+               (credendials ,(bs:pointer void))   ;git_cred_acquire_cb *
+                                                  ;git_transport_certificate_check_cb
+               (transport-certificate-check-cb ,(bs:pointer void))
+               (payload ,(bs:pointer void)))))
+
+(define GIT-PROXY-OPTIONS-VERSION 1)   ;supported version--see <git2/proxy.h>
+
+(define-record-type <proxy-options>
+  (%make-proxy-options bytestructure)
+  proxy-options?
+  (bytestructure proxy-options-bytestructure))
+
+(define (make-proxy-options-bytestructure)
+  (let ((bs (bytestructure %proxy-options)))
+    (bytestructure-set! bs 'version GIT-PROXY-OPTIONS-VERSION)
+    (%make-proxy-options bs)))
+
+(define (proxy-options->pointer proxy-options)
+  (bytestructure->pointer (proxy-options-bytestructure proxy-options)))
+
+(define %proxy-options-strings
+  ;; This weak-key 'eq?' hash table maps <proxy-options> records to pointer
+  ;; objects that must outlive them.
+  (make-weak-key-hash-table))
+
+(define (symbol->proxy-type symbol)
+  "Convert SYMBOL to an integer of the 'git_proxy_t' enum."
+  (match symbol
+    ('none      0)
+    ('auto      1)
+    ('specified 2)))
+
+(define (proxy-type->symbol type)
+  "Convert INTEGER, a value of the 'git_proxy_t' enum, to a symbol."
+  (match type
+    (0 'none)
+    (1 'auto)
+    (2 'specified)))
+
+(define (proxy-options-type proxy-options)
+  "Return the proxy type, a symbol, specified in PROXY-OPTIONS."
+  (let ((proxy-options-bs (proxy-options-bytestructure proxy-options)))
+    (proxy-type->symbol
+     (bytestructure-ref proxy-options-bs 'type))))
+
+(define (proxy-options-url proxy-options)
+  "Return the proxy URL specified in PROXY-OPTIONS, or #f if there is none."
+  (let* ((proxy-options-bs (proxy-options-bytestructure proxy-options))
+         (ptr              (make-pointer
+                            (bytestructure-ref proxy-options-bs 'url))))
+    (and (not (null-pointer? ptr))
+         (pointer->string ptr -1 "UTF-8"))))
+
+(define (set-proxy-options-type! proxy-options type)
+  "Change the type of proxy in PROXY-OPTIONS to TYPE, one of 'none (no
+proxy), 'auto (auto-detect proxy), or 'specified (use the specified proxy
+URL)."
+  (let ((proxy-options-bs (proxy-options-bytestructure proxy-options)))
+    (bytestructure-set! proxy-options-bs 'type
+                        (symbol->proxy-type type))))
+
+(define (set-proxy-options-url! proxy-options url)
+  "Set the proxy URL in PROXY-OPTIONS to URL.  Make sure to change the proxy
+type to 'specified for this to take effect."
+  (let ((proxy-options-bs (proxy-options-bytestructure proxy-options))
+        (str              (and url (string->pointer url "UTF-8"))))
+    (if str
+        (begin
+          ;; Make sure STR is not reclaimed before PROXY-OPTIONS-BS.
+          (hashq-set! %proxy-options-strings proxy-options-bs str)
+          (bytestructure-set! proxy-options-bs 'url (pointer-address str)))
+        (bytestructure-set! proxy-options-bs 'url 0))))
+
 ;; git fetch options
 
 (define %remote-callbacks
@@ -344,14 +432,6 @@
 
 (define (set-remote-callbacks-version! remote-callbacks version)
   (bytestructure-set! (remote-callbacks-bytestructure remote-callbacks) 'version version))
-
-(define %proxy-options
-  (bs:struct `((version ,int)
-               (type ,int)
-               (url ,(bs:pointer uint8))
-               (credentials ,(bs:pointer uint8))
-               (certificate-check ,(bs:pointer uint8))
-               (payload ,(bs:pointer uint8)))))
 
 (define %fetch-options
   (bs:struct `((version ,int)
@@ -417,6 +497,26 @@ tag policy in FETCH-OPTIONS."
 
 (define (set-remote-callbacks-credentials! callbacks credentials)
   (bytestructure-set! callbacks 'credentials credentials))
+
+(define (fetch-options-proxy-options fetch-options)
+  "Return the <proxy-options> record associated with FETCH-OPTIONS."
+  (let ((bs (fetch-options-bytestructure fetch-options)))
+    (%make-proxy-options (bytestructure-ref bs 'proxy-opts))))
+
+(define %fetch-options-proxy-options
+  ;; This weak-key 'eq?' hash table maps <fetch-options> records to
+  ;; <proxy-options> records that they aggregate and that must outlive them.
+  (make-weak-key-hash-table))
+
+(define (set-fetch-options-proxy-options! fetch-options proxy-options)
+  "Use PROXY-OPTIONS as the proxy options in FETCH-OPTIONS."
+  (let ((fetch-bs (fetch-options-bytestructure fetch-options))
+        (proxy-bs (proxy-options-bytestructure proxy-options)))
+    (bytestructure-set! fetch-bs 'proxy-opts
+                        (bytestructure-bytevector proxy-bs))
+
+    ;; Make sure PROXY-OPTIONS outlives FETCH-OPTIONS.
+    (hashq-set! %fetch-options-proxy-options fetch-bs proxy-bs)))
 
 ;; git clone options
 

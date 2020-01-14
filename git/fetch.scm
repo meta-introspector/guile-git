@@ -30,14 +30,15 @@
             fetch-init-options   ;deprecated!
             set-fetch-auth-with-ssh-agent!
             set-fetch-auth-with-ssh-key!
-            set-fetch-auth-with-default-ssh-key!))
+            set-fetch-auth-with-default-ssh-key!)
+  #:re-export (fetch-options-proxy-options))
 
 (define FETCH-OPTIONS-VERSION 1)
 
 (define make-fetch-options
   (let ((proc (libgit2->procedure* "git_fetch_init_options"
                                    `(* ,unsigned-int))))
-    (lambda* (#:optional auth-method)
+    (lambda* (#:optional auth-method #:key proxy-options)
       (let ((fetch-options (make-fetch-options-bytestructure)))
         (proc (fetch-options->pointer fetch-options) FETCH-OPTIONS-VERSION)
         (cond
@@ -45,6 +46,9 @@
           (set-fetch-auth-with-ssh-key! fetch-options auth-method))
          ((auth-ssh-agent? auth-method)
           (set-fetch-auth-with-ssh-agent! fetch-options)))
+
+        (when proxy-options
+          (set-fetch-options-proxy-options! fetch-options proxy-options))
         fetch-options))))
 
 (define fetch-init-options

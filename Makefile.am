@@ -1,7 +1,7 @@
 # Guile-Git --- GNU Guile bindings of libgit2
 # Copyright © 2016-2018 Erik Edrosa <erik.edrosa@gmail.com>
 # Copyright © 2016, 2017 Amirouche Boubekki <amirouche@hypermove.net>
-# Copyright © 2017, 2018, 2019 Ludovic Courtès <ludo@gnu.org>
+# Copyright © 2017, 2018, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
 # Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 #
 # This file is part of Guile-Git.
@@ -43,6 +43,7 @@ SOURCES =                           \
   git/fetch.scm                     \
   git/oid.scm                       \
   git/object.scm                    \
+  git/proxy.scm                     \
   git/reference.scm                 \
   git/repository.scm                \
   git/reset.scm	                    \
@@ -81,6 +82,7 @@ TESTS =                                         \
   tests/commit.scm                              \
   tests/describe.scm                            \
   tests/oid.scm                                 \
+  tests/proxy.scm                               \
   tests/reference.scm                           \
   tests/repository.scm                          \
   tests/reset.scm                               \
