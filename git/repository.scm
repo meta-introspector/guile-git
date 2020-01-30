@@ -140,7 +140,7 @@
 (define repository-index
   (let ((proc (libgit2->procedure* "git_repository_index" '(* *))))
     (lambda (repository)
-      (let ((out ((make-double-pointer))))
+      (let ((out (make-double-pointer)))
         (proc (repository->pointer repository))
         (pointer->index (dereference-pointer out))))))
 
@@ -267,7 +267,7 @@ return value is unspecified."
 (define repository-refdb
   (let ((proc (libgit2->procedure* "git_repository_refdb" `(* *))))
     (lambda (repository)
-      (let ((out ((make-double-pointer))))
+      (let ((out (make-double-pointer)))
         (proc out (repository->pointer repository))
         (pointer->refdb (dereference-pointer out))))))
 
