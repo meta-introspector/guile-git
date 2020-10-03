@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2020 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -81,13 +81,21 @@
                         (rmdir path)
                         (delete-file path)))))
 
-(define-syntax-rule (with-directory path body ...)
-  (begin
-    (when (access? path F_OK)
-      (rmtree path))
-    (path-mkdir path #true)
-    body ...
-    (rmtree path)))
+(define (call-with-directory directory thunk)
+  (dynamic-wind
+    (lambda ()
+      (when (access? directory F_OK)
+        (rmtree directory))
+      (path-mkdir directory #true))
+    thunk
+    (lambda ()
+      (rmtree directory))))
+
+(define-syntax-rule (with-directory directory body ...)
+  "Evaluate BODY... in a context where DIRECTORY exists as an empty directory
+and return its result.  DIRECTORY is removed when the dynamic extent of
+BODY... is left."
+  (call-with-directory directory (lambda () body ...)))
 
 (export with-directory)
 
