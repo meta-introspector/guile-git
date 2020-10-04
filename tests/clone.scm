@@ -1,5 +1,6 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
+;;; Copyright © 2020 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -20,7 +21,9 @@
   #:use-module (git)
   #:use-module (tests helpers)
   #:use-module (tests ssh)
-  #:use-module (srfi srfi-64))
+  #:use-module (srfi srfi-1)
+  #:use-module (srfi srfi-64)
+  #:use-module (ice-9 match))
 
 (test-begin "clone")
 
@@ -65,7 +68,33 @@
                 (repository (repository-open clone-dir))
                 (remote (remote-lookup repository "origin")))
            (remote-fetch remote #:fetch-options (make-fetch-options auth))
-           #t)))))
+           #t)))
+
+     (test-assert "clone + transfer-progress"
+       (with-repository "simple-bare" repository-directory
+         (let ((stats '()))                        ;list of <indexer-progress>
+           (let* ((checkout-directory (in-vicinity repository-directory
+                                                   "checkout"))
+                  (transfer-progress (lambda (progress)
+                                       (set! stats (cons progress stats))
+                                       #t))
+                  (fetch-options (make-fetch-options (make-client-ssh-auth)
+                                                     #:transfer-progress
+                                                     transfer-progress)))
+
+             (clone (make-ssh-url (canonicalize-path repository-directory)
+                                  ssh-server-port)
+                    checkout-directory
+                    (make-clone-options #:fetch-options fetch-options)))
+
+           ;; Make sure the <indexer-progress> records we got exhibit
+           ;; monotonic growth.
+           (match (reverse stats)
+             ((first rest ...)
+              (let ((max (indexer-progress-total-objects first)))
+                (equal? (map indexer-progress-received-objects
+                             (take (cons first rest) (+ max 1)))
+                        (iota (+ max 1)))))))))))
 
 (libgit2-shutdown!)
 

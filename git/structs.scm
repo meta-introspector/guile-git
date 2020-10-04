@@ -28,13 +28,15 @@
   #:use-module ((system foreign) #:select (null-pointer?
                                            bytevector->pointer
                                            make-pointer
+                                           procedure->pointer
                                            pointer->bytevector
                                            pointer->string
                                            string->pointer
                                            sizeof
                                            dereference-pointer
                                            pointer-address
-                                           void))
+                                           void
+                                           (int . ffi:int)))
   #:use-module (bytestructures guile)
   #:use-module (ice-9 match)
   #:export (git-error? git-error-code git-error-message git-error-class pointer->git-error
@@ -50,11 +52,20 @@
 
             make-status-options-bytestructure status-options->pointer set-status-options-show! set-status-options-flags!
 
-            make-remote-callbacks remote-callbacks->pointer set-remote-callbacks-version!
+            make-remote-callbacks remote-callbacks->pointer set-remote-callbacks-version! set-remote-callbacks-transfer-progress!
             make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-remote-callbacks
             fetch-options-download-tags set-fetch-options-download-tags!
             set-remote-callbacks-credentials!
             fetch-options-proxy-options set-fetch-options-proxy-options!
+
+            indexer-progress?
+            indexer-progress-total-objects
+            indexer-progress-indexed-objects
+            indexer-progress-received-objects
+            indexer-progress-local-objects
+            indexer-progress-total-deltas
+            indexer-progress-total-deltas
+            indexer-progress-received-bytes
 
             proxy-options?
             make-proxy-options-bytestructure proxy-options-bytestructure proxy-options->pointer proxy-options-callbacks
@@ -402,7 +413,43 @@ type to 'specified for this to take effect."
           (bytestructure-set! proxy-options-bs 'url (pointer-address str)))
         (bytestructure-set! proxy-options-bs 'url 0))))
 
+
 ;; git fetch options
+
+(define %indexer-progress
+  (bs:struct `((total-objects ,unsigned-int)
+               (indexed-objects ,unsigned-int)
+               (received-objects ,unsigned-int)
+               (local-objects ,unsigned-int)
+               (total-deltas ,unsigned-int)
+               (indexed-deltas ,unsigned-int)
+               (received-bytes ,size_t))))
+
+(define-record-type <indexer-progress>
+  (%make-indexer-progress total-objects indexed-objects
+                          received-objects local-objects
+                          total-deltas indexed-deltas
+                          received-bytes)
+  indexer-progress?
+  (total-objects    indexer-progress-total-objects)
+  (indexed-objects  indexer-progress-indexed-objects)
+  (received-objects indexer-progress-received-objects)
+  (local-objects    indexer-progress-local-objects)
+  (total-deltas     indexer-progress-total-deltas)
+  (indexed-deltas   indexer-progress-total-deltas)
+  (received-bytes   indexer-progress-received-bytes))
+
+(define (bytestructure->indexer-progress bs)
+  "Return a copy of BS, an %INDEXER-PROGRESS bytestructure, as an
+<indexer-progress> record."
+  (let-syntax ((make (syntax-rules ()
+                       ((_ field ...)
+                        (%make-indexer-progress
+                         (bytestructure-ref bs 'field) ...)))))
+    (make total-objects indexed-objects
+          received-objects local-objects
+          total-deltas indexed-deltas
+          received-bytes)))
 
 (define %remote-callbacks
   (bs:struct `((version ,unsigned-int)
@@ -499,6 +546,31 @@ tag policy in FETCH-OPTIONS."
 (define (set-remote-callbacks-credentials! callbacks credentials)
   (bytestructure-set! (remote-callbacks-bytestructure callbacks)
                       'credentials credentials))
+
+(define (procedure->indexer-progress-callback proc)
+  "Wrap PROC and return a pointer that can be used as a
+'git_indexer_progress_cb' value."
+  ;; https://libgit2.org/libgit2/#HEAD/group/callback/git_indexer_progress_cb
+  (procedure->pointer ffi:int
+                      (lambda (ptr _)
+                        ;; Return a value less than zero to cancel the
+                        ;; indexing or download.
+                        (if (proc (bytestructure->indexer-progress
+                                   (pointer->bytestructure ptr
+                                                           %indexer-progress)))
+                            0
+                            -1))
+                      '(* *)))
+
+(define (set-remote-callbacks-transfer-progress! callbacks proc)
+  "Set PROC as a transfer-progress callback in CALLBACKS.  PROC will be
+called periodically as data if fetched from the remote, with one argument: an
+indexer progress record.  PROC can cancel the on-going transfer by returning
+#f."
+  (bytestructure-set! (remote-callbacks-bytestructure callbacks)
+                      'transfer-progress
+                      (pointer-address
+                       (procedure->indexer-progress-callback proc))))
 
 (define (fetch-options-proxy-options fetch-options)
   "Return the <proxy-options> record associated with FETCH-OPTIONS."

@@ -38,9 +38,18 @@
 (define make-fetch-options
   (let ((proc (libgit2->procedure* "git_fetch_init_options"
                                    `(* ,unsigned-int))))
-    (lambda* (#:optional auth-method #:key proxy-options)
+    (lambda* (#:optional auth-method
+              #:key proxy-options transfer-progress)
+      "Return a <fetch-options> record.  When AUTH-METHOD is true, it must be
+an object as returned by '%make-auth-ssh-agent' or
+'%make-auth-ssh-credentials'.  When TRANSFER-PROGRESS is true, it must be a
+one-argument procedure.  TRANSFER-PROGRESS is called periodically and passed
+an <indexer-progress> record; when TRANSFER-PROGRESS returns #false,
+transfers are canceled.  When PROXY-OPTIONS is true, it must be a record as
+returned by 'make-proxy-options'."
       (let ((fetch-options (make-fetch-options-bytestructure)))
         (proc (fetch-options->pointer fetch-options) FETCH-OPTIONS-VERSION)
+
         (cond
          ((auth-ssh-credentials? auth-method)
           (set-fetch-auth-with-ssh-key! fetch-options auth-method))
@@ -49,6 +58,11 @@
 
         (when proxy-options
           (set-fetch-options-proxy-options! fetch-options proxy-options))
+
+        (when transfer-progress
+          (set-fetch-options-transfer-progress! fetch-options
+                                                transfer-progress))
+
         fetch-options))))
 
 (define fetch-init-options
@@ -99,3 +113,8 @@
                             pub-key-file
                             pri-key-file
                             ""))) )))))
+
+(define (set-fetch-options-transfer-progress! fetch-options
+                                              transfer-progress)
+  (let ((callbacks (fetch-options-remote-callbacks fetch-options)))
+    (set-remote-callbacks-transfer-progress! callbacks transfer-progress)))
