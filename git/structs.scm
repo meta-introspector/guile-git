@@ -53,7 +53,7 @@
             make-remote-callbacks remote-callbacks->pointer set-remote-callbacks-version!
             make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-callbacks
             fetch-options-download-tags set-fetch-options-download-tags!
-            set-fetch-options-callbacks! set-remote-callbacks-credentials!
+            set-remote-callbacks-credentials!
             fetch-options-proxy-options set-fetch-options-proxy-options!
 
             proxy-options?
@@ -495,9 +495,6 @@ tag policy in FETCH-OPTIONS."
 (define (fetch-options-callbacks fetch-options)
   (bytestructure-ref (fetch-options-bytestructure fetch-options) 'callbacks))
 
-(define (set-fetch-options-callbacks! fetch-options callbacks)
-  (bytestructure-set! (fetch-options-bytestructure fetch-options)
-                      'callbacks callbacks))
 
 (define (set-remote-callbacks-credentials! callbacks credentials)
   (bytestructure-set! callbacks 'credentials credentials))
