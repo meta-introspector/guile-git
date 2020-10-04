@@ -424,8 +424,12 @@ type to 'specified for this to take effect."
   remote-callbacks?
   (bytestructure remote-callbacks-bytestructure))
 
+(define REMOTE-CALLBACKS-VERSION 1)               ;<git2/remote.h>
+
 (define (make-remote-callbacks)
-  (%make-remote-callbacks (bytestructure %remote-callbacks)))
+  (let ((bs (bytestructure %remote-callbacks)))
+    (bytestructure-set! bs 'version REMOTE-CALLBACKS-VERSION)
+    (%make-remote-callbacks bs)))
 
 (define (remote-callbacks->pointer remote-callbacks)
   (bytestructure->pointer (remote-callbacks-bytestructure remote-callbacks)))
