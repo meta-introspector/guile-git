@@ -51,7 +51,7 @@
             make-status-options-bytestructure status-options->pointer set-status-options-show! set-status-options-flags!
 
             make-remote-callbacks remote-callbacks->pointer set-remote-callbacks-version!
-            make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-callbacks
+            make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-remote-callbacks
             fetch-options-download-tags set-fetch-options-download-tags!
             set-remote-callbacks-credentials!
             fetch-options-proxy-options set-fetch-options-proxy-options!
@@ -492,12 +492,13 @@ tag policy in FETCH-OPTIONS."
                       'download-tags
                       (symbol->remote-autotag-option policy)))
 
-(define (fetch-options-callbacks fetch-options)
-  (bytestructure-ref (fetch-options-bytestructure fetch-options) 'callbacks))
-
+(define (fetch-options-remote-callbacks fetch-options)
+  (%make-remote-callbacks
+   (bytestructure-ref (fetch-options-bytestructure fetch-options) 'callbacks)))
 
 (define (set-remote-callbacks-credentials! callbacks credentials)
-  (bytestructure-set! callbacks 'credentials credentials))
+  (bytestructure-set! (remote-callbacks-bytestructure callbacks)
+                      'credentials credentials))
 
 (define (fetch-options-proxy-options fetch-options)
   "Return the <proxy-options> record associated with FETCH-OPTIONS."

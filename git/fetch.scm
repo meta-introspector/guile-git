@@ -56,7 +56,7 @@
   make-fetch-options)
 
 (define (set-fetch-auth-callback fetch-options callback)
-  (let ((callbacks (fetch-options-callbacks fetch-options)))
+  (let ((callbacks (fetch-options-remote-callbacks fetch-options)))
     (set-remote-callbacks-credentials! callbacks
                                        (pointer-address callback))))
 
