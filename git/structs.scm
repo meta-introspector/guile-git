@@ -25,6 +25,7 @@
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
+  #:use-module (git config)
   #:use-module ((system foreign) #:select (null-pointer?
                                            bytevector->pointer
                                            make-pointer
@@ -464,7 +465,13 @@ type to 'specified for this to take effect."
                (push-update-reference ,(bs:pointer uint8))
                (push-negotiation ,(bs:pointer uint8))
                (transport ,(bs:pointer uint8))
-               (payload ,(bs:pointer uint8)))))
+               (payload ,(bs:pointer uint8))
+
+               ;; libgit2 1.0 added this field, which is missing from 0.28.5,
+               ;; even though in both cases GIT_REMOTE_CALLBACKS_VERSION = 1.
+               ,@(if %have-remote-callbacks-resolve-url?
+                     `((resolve-url ,(bs:pointer uint8)))
+                     '()))))
 
 (define-record-type <remote-callbacks>
   (%make-remote-callbacks bytestructure)

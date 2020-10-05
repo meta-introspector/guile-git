@@ -1,6 +1,6 @@
 dnl Guile-Git --- GNU Guile bindings of libgit2
 dnl Copyright © 2016-2018 Erik Edrosa <erik.edrosa@gmail.com>
-dnl Copyright © 2017, 2019 Ludovic Courtès <ludo@gnu.org>
+dnl Copyright © 2017, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
 dnl Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 dnl
 dnl This file is part of Guile-Git.
@@ -42,6 +42,17 @@ AS_IF([test "x$LIBGIT2_LIBDIR" = "x"], [
   AC_MSG_FAILURE([Unable to identify libgit2 lib path.])
 ])
 AC_SUBST([LIBGIT2_LIBDIR])
+
+dnl Does the 'git_remote_callbacks' struct have a 'resolve_url' field?
+dnl It's missing in libgit2 0.28.5, added in 1.0.
+AC_CHECK_MEMBER([git_remote_callbacks.resolve_url], [], [],
+  [[#include <git2.h>]])
+if test "x$ac_cv_member_git_remote_callbacks_resolve_url" = "xyes"; then
+  HAVE_REMOTE_CALLBACKS_RESOLVE_URL="#true"
+else
+  HAVE_REMOTE_CALLBACKS_RESOLVE_URL="#false"
+fi
+AC_SUBST([HAVE_REMOTE_CALLBACKS_RESOLVE_URL])
 
 dnl Those binaries are required for ssh authentication tests.
 AC_PATH_PROG([SSHD], [sshd])
