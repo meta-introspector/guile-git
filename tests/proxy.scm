@@ -89,11 +89,16 @@ request received by the proxy."
 
 (test-begin "proxy")
 
-(test-equal "clone with HTTP proxy"
-  '(GET "http://example.org/example.git/info/refs?service=git-upload-pack")
-  (clone-through-proxy "http://example.org/example.git"))
 
-;; XXX: We cannot test the HTTPS proxy because (web http) does not recognize
-;; the "CONNECT" method, so it doesn't reach our request handler.
+;; Guile < 3.0.3 doesn't recognize the CONNECT method in (web http).
+(when (string<? (version) "3.0.3")
+  (test-skip 1))
+
+(test-equal "clone with HTTPS proxy"
+  '(CONNECT "example.org:443")
+  (clone-through-proxy "https://example.org/example.git"))
+
+;; XXX: libgit2 1.0.1 doesn't support HTTP proxy, so we only test HTTPS.  See
+;; <https://github.com/libgit2/libgit2/issues/5650>.
 
 (test-end "proxy")
