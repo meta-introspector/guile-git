@@ -18,7 +18,6 @@
 
 (define-module (tests proxy)
   #:use-module (git)
-  #:use-module (git proxy)
   #:use-module (tests helpers)
   #:use-module (srfi srfi-9)
   #:use-module (srfi srfi-64)
@@ -69,13 +68,12 @@
 request received by the proxy."
   (let ((box (make-box #f)))
     (spawn-proxy box)
-    (let* ((proxy-options (make-proxy-options
+    (let* ((fetch-options (make-fetch-options
+                           #:proxy-url
                            ;; Note: libgit2 wants a proper URL with a path.
-                           #:url (string-append "http://localhost:"
-                                                (number->string %proxy-port)
-                                                "/")))
-           (fetch-options (make-fetch-options
-                           #:proxy-options proxy-options))
+                           (string-append "http://localhost:"
+                                          (number->string %proxy-port)
+                                          "/")))
            (clone-options (make-clone-options
                            #:fetch-options fetch-options)))
       (catch 'git-error

@@ -57,7 +57,7 @@
             make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-remote-callbacks
             fetch-options-download-tags set-fetch-options-download-tags!
             set-remote-callbacks-credentials!
-            fetch-options-proxy-options set-fetch-options-proxy-options!
+            fetch-options-proxy-options
 
             indexer-progress?
             indexer-progress-total-objects
@@ -583,21 +583,6 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
   "Return the <proxy-options> record associated with FETCH-OPTIONS."
   (let ((bs (fetch-options-bytestructure fetch-options)))
     (%make-proxy-options (bytestructure-ref bs 'proxy-opts))))
-
-(define %fetch-options-proxy-options
-  ;; This weak-key 'eq?' hash table maps <fetch-options> records to
-  ;; <proxy-options> records that they aggregate and that must outlive them.
-  (make-weak-key-hash-table))
-
-(define (set-fetch-options-proxy-options! fetch-options proxy-options)
-  "Use PROXY-OPTIONS as the proxy options in FETCH-OPTIONS."
-  (let ((fetch-bs (fetch-options-bytestructure fetch-options))
-        (proxy-bs (proxy-options-bytestructure proxy-options)))
-    (bytestructure-set! fetch-bs 'proxy-opts
-                        (bytestructure-bytevector proxy-bs))
-
-    ;; Make sure PROXY-OPTIONS outlives FETCH-OPTIONS.
-    (hashq-set! %fetch-options-proxy-options fetch-bs proxy-bs)))
 
 ;; git clone options
 

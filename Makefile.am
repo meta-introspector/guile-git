@@ -43,7 +43,6 @@ SOURCES =                           \
   git/fetch.scm                     \
   git/oid.scm                       \
   git/object.scm                    \
-  git/proxy.scm                     \
   git/reference.scm                 \
   git/repository.scm                \
   git/reset.scm	                    \

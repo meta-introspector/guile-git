@@ -30,8 +30,7 @@
             fetch-init-options   ;deprecated!
             set-fetch-auth-with-ssh-agent!
             set-fetch-auth-with-ssh-key!
-            set-fetch-auth-with-default-ssh-key!)
-  #:re-export (fetch-options-proxy-options))
+            set-fetch-auth-with-default-ssh-key!))
 
 (define FETCH-OPTIONS-VERSION 1)
 
@@ -39,14 +38,20 @@
   (let ((proc (libgit2->procedure* "git_fetch_init_options"
                                    `(* ,unsigned-int))))
     (lambda* (#:optional auth-method
-              #:key proxy-options transfer-progress)
+              #:key
+              proxy-url (proxy-type (if proxy-url 'specified 'none))
+              transfer-progress)
       "Return a <fetch-options> record.  When AUTH-METHOD is true, it must be
 an object as returned by '%make-auth-ssh-agent' or
 '%make-auth-ssh-credentials'.  When TRANSFER-PROGRESS is true, it must be a
 one-argument procedure.  TRANSFER-PROGRESS is called periodically and passed
 an <indexer-progress> record; when TRANSFER-PROGRESS returns #false,
-transfers are canceled.  When PROXY-OPTIONS is true, it must be a record as
-returned by 'make-proxy-options'."
+transfers are canceled.
+
+When PROXY-URL is true, it is the URL of an HTTP/HTTPS proxy to use.
+PROXY-TYPE is one of 'none, 'specified, or 'auto.  The default is 'specified
+when PROXY-URL is true and 'none when PROXY-URL is false.  Setting it to
+'auto enables proxy detection based on the Git configuration."
       (let ((fetch-options (make-fetch-options-bytestructure)))
         (proc (fetch-options->pointer fetch-options) FETCH-OPTIONS-VERSION)
 
@@ -56,8 +61,9 @@ returned by 'make-proxy-options'."
          ((auth-ssh-agent? auth-method)
           (set-fetch-auth-with-ssh-agent! fetch-options)))
 
-        (when proxy-options
-          (set-fetch-options-proxy-options! fetch-options proxy-options))
+        (set-fetch-options-proxy-type! fetch-options proxy-type)
+        (when proxy-url
+          (set-fetch-options-proxy-url! fetch-options proxy-url))
 
         (when transfer-progress
           (set-fetch-options-transfer-progress! fetch-options
@@ -118,3 +124,11 @@ returned by 'make-proxy-options'."
                                               transfer-progress)
   (let ((callbacks (fetch-options-remote-callbacks fetch-options)))
     (set-remote-callbacks-transfer-progress! callbacks transfer-progress)))
+
+(define (set-fetch-options-proxy-type! fetch-options type)
+  (let ((proxy (fetch-options-proxy-options fetch-options)))
+    (set-proxy-options-type! proxy type)))
+
+(define (set-fetch-options-proxy-url! fetch-options url)
+  (let ((proxy (fetch-options-proxy-options fetch-options)))
+    (set-proxy-options-url! proxy url)))
