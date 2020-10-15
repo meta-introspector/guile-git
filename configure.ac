@@ -35,7 +35,7 @@ GUILE_MODULE_REQUIRED([srfi srfi-64])
 
 GUILE_MODULE_REQUIRED([bytestructures guile])
 
-PKG_CHECK_MODULES([LIBGIT2], [libgit2])
+PKG_CHECK_MODULES([LIBGIT2], [libgit2 >= 0.28.0])
 PKG_CHECK_VAR([LIBGIT2_LIBDIR], [libgit2], [libdir])
 AC_MSG_CHECKING([libgit2 library path])
 AS_IF([test "x$LIBGIT2_LIBDIR" = "x"], [
