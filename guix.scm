@@ -25,7 +25,7 @@
      ("openssh" ,openssh)
      ("git" ,git)))
   (inputs
-   `(("guile" ,guile-2.2)
+   `(("guile" ,guile-3.0)
      ("libgit2" ,libgit2)
      ("openssl" ,openssl)
      ("zlib" ,zlib)
