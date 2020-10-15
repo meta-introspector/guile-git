@@ -9,6 +9,31 @@ Copyright © 2018, 2019, 2020 Erik Edrosa
   notice and this notice are preserved.  This file is offered as-is,
   without any warranty.
 
+* Changes in 0.4.0 (since 0.3.0)
+
+** New Functionality
+
+*** Support for HTTP and HTTPS proxies
+
+One can now specify the HTTP and HTTPS via the ~#:proxy-url~ parameter
+of ~make-fetch-options~.  Those fetch options must then be passed to
+~fetch~, or they can be added to the clone options passed to ~clone~.
+
+*** Support for progress report
+
+Clones and fetches can take some time and you may want to tell users
+what’s going on.  To help with that, ~make-fetch-options~ now takes a
+~#:transfer-progress~ option; it should be either ~#f~ or a one-argument
+procedure that will be called with an ~<indexer-progress>~ record every
+time progress is made.  This record contains information about the total
+number of objects being processed, the number of objects already
+retrieved, and the number of objects already indexed.
+
+** Bug Fixes
+
+*** Fix typo that made ~repository-index~ and ~repository-refdb~ unusable
+
+
 * Changes in 0.3.0 (since 0.2.0)
 
 ** New Functionality
