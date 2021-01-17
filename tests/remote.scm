@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -45,7 +45,20 @@
           (clear-git-error!)
           (remote-lookup repository "does-not-exist")))
       (lambda (key err)
-        (list (git-error-code err) (git-error-class err))))))
+        (list (git-error-code err) (git-error-class err)))))
+
+  (test-equal "remote-url"
+    ;; This is the "origin" remote in 'data/simple-bare.tgz'.
+    "/home/erik/Workspace/guile-git/tests/data/simple"
+    (let* ((repository (repository-open directory))
+           (remote (remote-lookup repository "origin")))
+      (remote-url remote)))
+
+  (test-equal "remote-set-url!"
+    "https://example.org"
+    (let ((repository (repository-open directory)))
+      (remote-set-url! repository "origin" "https://example.org")
+      (remote-url (remote-lookup repository "origin")))))
 
 (libgit2-shutdown!)
 

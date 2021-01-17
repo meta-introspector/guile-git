@@ -1,6 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
+;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -25,6 +26,8 @@
   #:use-module (git structs)
   #:use-module (git types)
   #:export (remote-name
+            remote-url
+            remote-set-url!
             remote-lookup
             remote-fetch
             remote-create-anonymous
@@ -43,6 +46,20 @@
   (let ((proc (libgit2->procedure '* "git_remote_name" '(*))))
     (lambda (remote)
       (pointer->string (proc (remote->pointer remote))))))
+
+(define remote-url
+  (let ((proc (libgit2->procedure '* "git_remote_url" '(*))))
+    (lambda (remote)
+      "Return the URL of REMOTE, a \"remote\" as returned by
+'remote-lookup'."
+      (pointer->string (proc (remote->pointer remote))))))
+
+(define remote-set-url!
+  (let ((proc (libgit2->procedure* "git_remote_set_url" '(* * *))))
+    (lambda (repository remote url)
+      "Change the URL of REMOTE, a string, to URL."
+      (proc (repository->pointer repository) (string->pointer remote)
+            (string->pointer url)))))
 
 (define remote-lookup
   (let ((proc (libgit2->procedure* "git_remote_lookup" '(* * *))))
