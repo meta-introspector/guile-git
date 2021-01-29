@@ -28,7 +28,7 @@
             make-client-ssh-auth))
 
 (define sshd "@SSHD@")
-(define %ssh-dir (path-join (getenv "srcdir") "/tests/.ssh"))
+(define %ssh-dir (path-join "@abs_top_srcdir@" "/tests/.ssh"))
 (define (in-ssh-directory . args)
   (apply path-join %ssh-dir args))
 
