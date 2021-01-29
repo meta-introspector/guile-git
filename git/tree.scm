@@ -32,6 +32,7 @@
 
             tree-entry-byid
             tree-entry-byindex
+            tree-entry-byname
             tree-entry-bypath
             tree-entry-name
             tree-entry-id

@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -58,6 +58,14 @@
            (commit (commit-lookup repository oid))
            (tree (commit-tree commit)))
       (tree-list tree)))
+
+  (test-equal "tree-entry-byname"
+    "README"
+    (let* ((repository (repository-open directory))
+           (oid (reference-target (repository-head repository)))
+           (commit (commit-lookup repository oid))
+           (tree (commit-tree commit)))
+      (tree-entry-name (tree-entry-byname tree "README"))))
 
   (test-equal "tree-entry-bypath"
     "message"
