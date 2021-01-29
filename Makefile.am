@@ -1,7 +1,7 @@
 # Guile-Git --- GNU Guile bindings of libgit2
 # Copyright © 2016-2018 Erik Edrosa <erik.edrosa@gmail.com>
 # Copyright © 2016, 2017 Amirouche Boubekki <amirouche@hypermove.net>
-# Copyright © 2017, 2018, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
+# Copyright © 2017, 2018, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
 # Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 #
 # This file is part of Guile-Git.
@@ -101,7 +101,7 @@ SCM_LOG_DRIVER =                                \
 
 # Tell 'build-aux/test-driver.scm' to display only source file names,
 # not indivdual test names.
-AM_SCM_LOG_DRIVER_FLAGS = --brief=yes
+AM_SCM_LOG_DRIVER_FLAGS = --brief=no
 
 AM_SCM_LOG_FLAGS = --no-auto-compile -L "$(top_srcdir)"
 
