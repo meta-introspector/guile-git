@@ -69,7 +69,7 @@
             indexer-progress-received-bytes
 
             proxy-options?
-            make-proxy-options-bytestructure proxy-options-bytestructure proxy-options->pointer proxy-options-callbacks
+            proxy-options-bytestructure proxy-options->pointer proxy-options-callbacks
             proxy-options-url proxy-options-type
             set-proxy-options-url! set-proxy-options-type!
 
@@ -352,11 +352,6 @@
   (%make-proxy-options bytestructure)
   proxy-options?
   (bytestructure proxy-options-bytestructure))
-
-(define (make-proxy-options-bytestructure)
-  (let ((bs (bytestructure %proxy-options)))
-    (bytestructure-set! bs 'version GIT-PROXY-OPTIONS-VERSION)
-    (%make-proxy-options bs)))
 
 (define (proxy-options->pointer proxy-options)
   (bytestructure->pointer (proxy-options-bytestructure proxy-options)))
