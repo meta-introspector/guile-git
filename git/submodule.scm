@@ -1,5 +1,5 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
-;;; Copyright © 2018 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2018, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -34,6 +34,7 @@
             submodule-add-setup
             submodule-add-finalize
             submodule-add-to-index
+            submodule-set-url!
             submodule-set-branch!
             submodule-update))
 
@@ -171,6 +172,14 @@ ready to be committed (but doesn't actually do the commit)."
       "Add current submodule HEAD commit to index of superproject."
       (proc (submodule->pointer submodule)
             (if write-index? 1 0)))))
+
+(define submodule-set-url!
+  (let ((proc (libgit2->procedure* "git_submodule_set_url" '(* * *))))
+    (lambda (repository name url)
+      "Change to URL the url of submodule NAME in REPOSITORY."
+      (proc (repository->pointer repository)
+            (string->pointer name)
+            (string->pointer url)))))
 
 (define submodule-set-branch!
   (let ((proc (libgit2->procedure* "git_submodule_set_branch" '(* * *))))
