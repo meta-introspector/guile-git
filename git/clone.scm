@@ -50,12 +50,13 @@ on failure."
         (pointer->repository! (dereference-pointer out))))))
 
 (define make-clone-options
-  (let ((proc (libgit2->procedure* "git_clone_init_options" `(* ,unsigned-int)))
-        (clone-options (make-clone-options-bytestructure)))
+  (let ((proc (libgit2->procedure* "git_clone_init_options"
+                                   `(* ,unsigned-int))))
     (lambda* (#:key (fetch-options (make-fetch-options)))
-      (proc (clone-options->pointer clone-options) CLONE-OPTIONS-VERSION)
-      (set-clone-options-fetch-opts! clone-options fetch-options)
-      clone-options)))
+      (let ((clone-options (make-clone-options-bytestructure)))
+        (proc (clone-options->pointer clone-options) CLONE-OPTIONS-VERSION)
+        (set-clone-options-fetch-opts! clone-options fetch-options)
+        clone-options))))
 
 (define clone-init-options
   ;; Deprecated alias for compatibility with 0.2.
