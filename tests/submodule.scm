@@ -1,5 +1,5 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
-;;; Copyright © 2018 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2018, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -78,7 +78,29 @@
            (begin
              ;; Now update the submodule.
              (submodule-update submodule)
-             (oid=? head (reference-target (repository-head child))))))))
+             (oid=? head (reference-target (repository-head child)))))))
+
+  (test-assert "submodule-update with options"
+    (let* ((repository  (repository-open directory))
+           (head        (reference-target (repository-head repository)))
+           (head^       (commit-id (commit-parent
+                                    (commit-lookup repository head))))
+           (submodule   (submodule-lookup repository "submod"))
+           (child       (repository-open (string-append directory "/submod")))
+           (options     (make-fetch-options
+                         #:proxy-url "https://wrong-proxy.example.org/")))
+      ;; Force the sub-repo to HEAD^.
+      (reset child (object-lookup child head^) RESET_HARD)
+
+      ;; Now update the submodule.
+      ;; XXX: Unfortunately we cannot check whether the options are taken
+      ;; into account because this update does not trigger a fetch.
+      ;; Triggering a fetch is tricky.  So all this tests is whether there
+      ;; are any ABI issues, which is better than nothing.
+      (submodule-update submodule
+                        #:fetch-options options
+                        #:allow-fetch? #f)
+      (oid=? head (reference-target (repository-head child))))))
 
 (libgit2-shutdown!)
 

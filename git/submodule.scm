@@ -189,13 +189,34 @@ ready to be committed (but doesn't actually do the commit)."
             (string->pointer name)
             (string->pointer branch)))))
 
+(define GIT-SUBMODULE-UPDATE-OPTIONS-VERSION 1)
+
+(define make-submodule-update-options
+  (let ((proc (libgit2->procedure* "git_submodule_update_options_init"
+                                   `(* ,unsigned-int))))
+    (lambda ()
+      (let* ((options (make-submodule-update-options-bytestructure))
+             (bs      (submodule-update-options-bytestructure options)))
+        (proc (submodule-update-options->pointer options)
+              GIT-SUBMODULE-UPDATE-OPTIONS-VERSION)
+        options))))
+
 (define submodule-update
   (let ((proc (libgit2->procedure* "git_submodule_update" `(* ,int *))))
-    (lambda* (submodule #:key (initialize? #t))
+    (lambda* (submodule #:key (initialize? #t)
+                        (allow-fetch? #t)
+                        (fetch-options #f))
       "Update SUBMODULE.  This will clone it and check out the subrepository
 to the commit specified in the index of the containing repository.  If
-SUBMODULE doesn't contain the target commit, then the submodule is fetched using the
-fetch options supplied in OPTIONS."
-      (proc (submodule->pointer submodule)
-            (if initialize? 1 0)
-            %null-pointer))))
+SUBMODULE doesn't contain the target commit, then the submodule is fetched
+using the fetch options supplied in FETCH-OPTIONS.  When ALLOW-FETCH? is
+true, allow fetching from the submodule's default remote if the target commit
+isn't found."
+      (let ((options (make-submodule-update-options)))
+        (set-submodule-update-options-allow-fetch?! options allow-fetch?)
+        (when fetch-options
+          (set-submodule-update-options-fetch-options! options fetch-options))
+
+        (proc (submodule->pointer submodule)
+              (if initialize? 1 0)
+              (submodule-update-options->pointer options))))))

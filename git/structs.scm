@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2017, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2019 Marius Bakke <marius@devup.no>
@@ -75,6 +75,12 @@
 
 
             make-clone-options-bytestructure clone-options-bytestructure clone-options->pointer set-clone-options-fetch-opts!
+            submodule-update-options-bytestructure
+            make-submodule-update-options-bytestructure
+            submodule-update-options->pointer
+            submodule-update-options-bytestructure
+            set-submodule-update-options-allow-fetch?!
+            set-submodule-update-options-fetch-options!
 
             make-describe-options-bytestructure describe-options->pointer describe-options->bytestructure
             set-describe-options-max-candidates-tag! set-describe-options-strategy!
@@ -579,6 +585,7 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
   (let ((bs (fetch-options-bytestructure fetch-options)))
     (%make-proxy-options (bytestructure-ref bs 'proxy-opts))))
 
+
 ;; git clone options
 
 (define %checkout-options
@@ -632,6 +639,41 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
     (bytestructure-set! clone-options-bs 'fetch-opts
                         (bytestructure-bytevector fetch-options-bs))))
 
+
+;; submodule update options
+
+(define %submodule-update-options
+  (bs:struct `((version ,unsigned-int)
+               (checkout-options ,%checkout-options)
+               (fetch-options ,%fetch-options)
+               (allow-fetch? ,int))))
+
+(define-record-type <submodule-update-options>
+  (%make-submodule-update-options bytestructure)
+  submodule-update-options?
+  (bytestructure submodule-update-options-bytestructure))
+
+(define (make-submodule-update-options-bytestructure)
+  (%make-submodule-update-options (bytestructure %submodule-update-options)))
+
+(define (submodule-update-options->pointer options)
+  (bytestructure->pointer (submodule-update-options-bytestructure options)))
+
+(define (set-submodule-update-options-allow-fetch?! submodule-update-options
+                                                    allow-fetch?)
+  (let ((bs (submodule-update-options-bytestructure submodule-update-options)))
+    (bytestructure-set! bs 'allow-fetch? (if allow-fetch? 1 0))))
+
+;; TODO: set-submodule-update-options-checkout-options!
+
+(define (set-submodule-update-options-fetch-options! submodule-update-options
+                                                     fetch-options)
+  (let ((bs (submodule-update-options-bytestructure submodule-update-options))
+        (fetch-options-bs (fetch-options-bytestructure fetch-options)))
+    (bytestructure-set! bs 'fetch-options
+                        (bytestructure-bytevector fetch-options-bs))))
+
+
 ;; git remote head
 
 (define %remote-head
