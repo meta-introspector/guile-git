@@ -45,57 +45,63 @@
            (oid (reference-target (repository-head repository))))
       (oid->string (commit-id (commit-lookup repository oid))))))
 
-(if (not (sshd-available?))
-    (test-skip)
-    (with-sshd-server
-     ssh-server-port
-     (with-repository "simple-bare" directory
-       (test-equal "clone-auth-ssh-credentials"
-         "3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b"
-         (clone-test directory (make-client-ssh-auth))))
+;; Skip the following tests when sshd is unavailable.
+(unless (sshd-available?)
+  (test-skip 4))
 
-     (with-repository "simple-bare" directory
-       (test-equal "clone-auth-ssh-agent"
-         "3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b"
-         (with-ssh-agent
-          (clone-test directory (%make-auth-ssh-agent)))))
+(with-sshd-server ssh-server-port
 
-     (with-repository "simple-bare" directory
-       (test-assert "clone-and-fetch-auth-ssh-credentials"
-         (let* ((auth (make-client-ssh-auth))
-                (do-clone (clone-test directory auth))
-                (clone-dir (in-vicinity directory "out"))
-                (repository (repository-open clone-dir))
-                (remote (remote-lookup repository "origin")))
-           (remote-fetch remote #:fetch-options (make-fetch-options auth))
-           #t)))
+  (with-repository "simple-bare" directory
+    (test-equal "clone-auth-ssh-credentials"
+      "3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b"
+      (clone-test directory (make-client-ssh-auth))))
 
-     (test-assert "clone + transfer-progress"
-       (with-repository "simple-bare" repository-directory
-         (let ((stats '()))                        ;list of <indexer-progress>
-           (let* ((checkout-directory (in-vicinity repository-directory
-                                                   "checkout"))
-                  (transfer-progress (lambda (progress)
-                                       (set! stats (cons progress stats))
-                                       #t))
-                  (fetch-options (make-fetch-options (make-client-ssh-auth)
-                                                     #:transfer-progress
-                                                     transfer-progress)))
+  (with-repository "simple-bare" directory
+    (test-equal "clone-auth-ssh-agent"
+      "3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b"
+      (with-ssh-agent
+       (clone-test directory (%make-auth-ssh-agent)))))
 
-             (clone (make-ssh-url (canonicalize-path repository-directory)
-                                  ssh-server-port)
-                    checkout-directory
-                    (make-clone-options #:fetch-options fetch-options)))
+  (with-repository "simple-bare" directory
+    (test-assert "clone-and-fetch-auth-ssh-credentials"
+      (let* ((auth (make-client-ssh-auth))
+             (do-clone (clone-test directory auth))
+             (clone-dir (in-vicinity directory "out"))
+             (repository (repository-open clone-dir))
+             (remote (remote-lookup repository "origin")))
+        (remote-fetch remote #:fetch-options (make-fetch-options auth))
+        #t)))
 
-           ;; Make sure the <indexer-progress> records we got exhibit
-           ;; monotonic growth.
-           (match (reverse stats)
-             ((first rest ...)
-              (let ((max (indexer-progress-total-objects first)))
-                (equal? (map indexer-progress-received-objects
-                             (take (cons first rest) (+ max 1)))
-                        (iota (+ max 1)))))))))))
+  (test-assert "clone + transfer-progress"
+    (with-repository "simple-bare" repository-directory
+      (let ((stats '()))                          ;list of <indexer-progress>
+        (let* ((checkout-directory (in-vicinity repository-directory
+                                                "checkout"))
+               (transfer-progress (lambda (progress)
+                                    (set! stats (cons progress stats))
+                                    #t))
+               (fetch-options (make-fetch-options (make-client-ssh-auth)
+                                                  #:transfer-progress
+                                                  transfer-progress)))
+
+          (clone (make-ssh-url (canonicalize-path repository-directory)
+                               ssh-server-port)
+                 checkout-directory
+                 (make-clone-options #:fetch-options fetch-options)))
+
+        ;; Make sure the <indexer-progress> records we got exhibit
+        ;; monotonic growth.
+        (match (reverse stats)
+          ((first rest ...)
+           (let ((max (indexer-progress-total-objects first)))
+             (equal? (map indexer-progress-received-objects
+                          (take (cons first rest) (+ max 1)))
+                     (iota (+ max 1))))))))))
 
 (libgit2-shutdown!)
 
 (test-end)
+
+;; Local Variables:
+;; eval: (put 'with-sshd-server 'scheme-indent-function 1)
+;; End:
