@@ -51,7 +51,11 @@
   (define (write-sshd-conf conf authorized-keys)
     (call-with-output-file conf
       (lambda (port)
-        (format port "AuthorizedKeysFile ~a
+        (format port "\
+# Listen only on the loopback device.
+ListenAddress localhost
+
+AuthorizedKeysFile ~a
 PidFile ~a
 PermitUserEnvironment yes
 
