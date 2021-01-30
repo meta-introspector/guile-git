@@ -80,6 +80,16 @@ when PROXY-URL is true and 'none when PROXY-URL is false.  Setting it to
     (set-remote-callbacks-credentials! callbacks
                                        (pointer-address callback))))
 
+(define (current-user-name)
+  "Return the current user name."
+  ;; Note: 'getlogin', which relies on 'getutent', doesn't work inside Guix
+  ;; build environments.
+  (or (getlogin)
+      (and=> (false-if-exception (getpwuid (getuid)))
+             passwd:name)
+      (getenv "LOGNAME")
+      (getenv "USER")))
+
 (define (set-fetch-auth-with-ssh-agent! fetch-options)
   (set-fetch-auth-callback
    fetch-options
@@ -92,7 +102,7 @@ when PROXY-URL is true and 'none when PROXY-URL is false.  Setting it to
          ;; If no username were specified in URL, we will be asked for
          ;; one. Try with the current user login.
          ((= allowed CREDTYPE-SSH-USERNAME)
-          (cred-username-new cred (getlogin)))
+          (cred-username-new cred (current-user-name)))
          (else
           (cred-ssh-key-from-agent cred username))))))))
 
@@ -105,7 +115,7 @@ when PROXY-URL is true and 'none when PROXY-URL is false.  Setting it to
       (cond
        ;; Same as above.
        ((= allowed CREDTYPE-SSH-USERNAME)
-        (cred-username-new cred (getlogin)))
+        (cred-username-new cred (current-user-name)))
        (else
         (let* ((pri-key-file
                 (auth-ssh-credentials-private-key auth-ssh-credentials))
