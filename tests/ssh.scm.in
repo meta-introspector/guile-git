@@ -84,8 +84,20 @@ StrictModes no~%"
            read-pid)))
     (system* "kill" pid)))
 
+(define (valid-user-shell?)
+  "Return true if the current user has a valid shell in /etc/passwd."
+  ;; Note: This check is useful to account for Guix build environments, where
+  ;; /etc/passwd refers to a non-existent shell for the build user.  In that
+  ;; case, it's impossible to log in over SSH as sshd blindly attempts to
+  ;; execute the user shell.
+  (and=> (false-if-exception (getpwuid (getuid)))
+         (lambda (passwd)
+           (let ((shell (passwd:shell passwd)))
+             (access? shell (logior R_OK X_OK))))))
+
 (define-syntax-rule (with-sshd-server port tests ...)
-  (let ((skip? (not (sshd-available?))))
+  (let ((skip? (or (not (sshd-available?))
+                   (not (valid-user-shell?)))))
     (dynamic-wind
       (lambda ()
         (if skip?
