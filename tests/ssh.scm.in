@@ -19,6 +19,7 @@
 (define-module (tests ssh)
   #:use-module (git auth)
   #:use-module (tests helpers)
+  #:use-module ((srfi srfi-64) #:select (test-skip))
   #:use-module (ice-9 popen)
   #:use-module (ice-9 rdelim)
   #:use-module (ice-9 regex)
@@ -83,14 +84,18 @@ StrictModes no~%"
            read-pid)))
     (system* "kill" pid)))
 
-(define-syntax-rule (with-sshd-server port body ...)
-  (dynamic-wind
-    (lambda ()
-      (start-sshd port))
-    (lambda ()
-      body ...)
-    (lambda ()
-      (stop-sshd))))
+(define-syntax-rule (with-sshd-server port tests ...)
+  (let ((skip? (not (sshd-available?))))
+    (dynamic-wind
+      (lambda ()
+        (if skip?
+            (test-skip (length '(tests ...)))
+            (start-sshd port)))
+      (lambda ()
+        tests ...)
+      (lambda ()
+        (unless skip?
+          (stop-sshd))))))
 
 (define %ssh-auth-sock-regexp
   (make-regexp "SSH_AUTH_SOCK=(.*); export SSH_AUTH_SOCK;"))

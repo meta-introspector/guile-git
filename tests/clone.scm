@@ -1,6 +1,6 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
-;;; Copyright © 2020 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2020, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -45,10 +45,7 @@
            (oid (reference-target (repository-head repository))))
       (oid->string (commit-id (commit-lookup repository oid))))))
 
-;; Skip the following tests when sshd is unavailable.
-(unless (sshd-available?)
-  (test-skip 4))
-
+;; The following tests are skipped when sshd is unavailable.
 (with-sshd-server ssh-server-port
 
   (with-repository "simple-bare" directory
