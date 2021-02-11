@@ -70,6 +70,9 @@ NODIST_SOURCES =                    \
 
 TESTS_UTILS =                                   \
   tests/helpers.scm                             \
+  tests/.ssh/id_rsa_client                      \
+  tests/.ssh/id_rsa_client.pub                  \
+  tests/.ssh/id_rsa_server                      \
   tests/data/simple-bare.tgz                    \
   tests/data/simple.tgz                         \
   tests/data/README
