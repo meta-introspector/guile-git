@@ -2,6 +2,7 @@
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
 ;;; Copyright © 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2021 Marius Bakke <marius@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -136,9 +137,19 @@
 
 (define %commit-free (libgit2->pointer "git_commit_free"))
 
-(define (pointer->commit! pointer)
+(define %commit-owners
+  ;; This table maps <git-commit> records to their "owner", usually a
+  ;; <repository> record.  This is used to ensure that the lifetime of the
+  ;; commit is shorter than that of its owner so that 'commit-lookup' et.al.
+  ;; always returns a valid object.
+  (make-weak-key-hash-table))
+
+(define* (pointer->commit! pointer #:optional owner)
   (set-pointer-finalizer! pointer %commit-free)
-  (pointer->commit pointer))
+  (let ((commit (pointer->commit pointer)))
+    (when owner
+      (hashq-set! %commit-owners commit owner))
+    commit))
 
 (define commit-header-field
   (let ((proc (libgit2->procedure* "git_commit_header_field" '(* * *))))
@@ -159,14 +170,14 @@
     (lambda (repository oid)
       (let ((out (make-double-pointer)))
         (proc out (repository->pointer repository) (oid->pointer oid))
-        (pointer->commit! (dereference-pointer out))))))
+        (pointer->commit! (dereference-pointer out) repository)))))
 
 (define commit-lookup-prefix
   (let ((proc (libgit2->procedure* "git_commit_lookup_prefix" `(* * * ,size_t))))
     (lambda (repository id len)
       (let ((out (make-double-pointer)))
         (proc out (repository->pointer repository) (oid->pointer id) len)
-        (pointer->commit! (dereference-pointer out))))))
+        (pointer->commit! (dereference-pointer out) repository)))))
 
 (define commit-message
   (let ((proc (libgit2->procedure '* "git_commit_message" '(*))))
