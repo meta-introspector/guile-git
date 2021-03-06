@@ -48,6 +48,8 @@
             diff-file? diff-file-oid diff-file-path diff-file-size diff-file-flags diff-file-mode diff-file-id-abbrev
 
             diff-delta? diff-delta-status diff-delta-flags diff-delta-status diff-delta-nfiles diff-delta-old-file diff-delta-new-file
+            diff-line? diff-line-origin diff-line-old-lineno diff-line-new-lineno diff-line-num-lines diff-line-content-len
+            diff-line-content-offset diff-line-content pointer->diff-line
 
             status-entry? status-entry-status status-entry-head-to-index status-entry-index-to-workdir pointer->status-entry
 
@@ -236,6 +238,15 @@
                (head-to-index ,(bs:pointer %diff-delta))
                (index-to-workdir ,(bs:pointer %diff-delta)))))
 
+(define %diff-line
+  (bs:struct `((origin ,int8)
+               (old-lineno ,int)
+               (new-lineno ,int)
+               (num-lines ,int)
+               (content-len ,size_t)
+               (content-offset ,int64)
+               (content ,(bs:pointer int8))))) ;char *
+
 (define (flags->symbols flags map-list)
   (fold (lambda (flag-map symbols)
           (match flag-map
@@ -296,6 +307,17 @@
   (head-to-index status-entry-head-to-index)
   (index-to-workdir status-entry-index-to-workdir))
 
+(define-record-type <diff-line>
+  (%make-diff-line origin old-lineno new-lineno num-lines content-len content-offset content)
+  diff-line?
+  (origin diff-line-origin)
+  (old-lineno diff-line-old-lineno)
+  (new-lineno diff-line-new-lineno)
+  (num-lines diff-line-num-lines)
+  (content-len diff-line-content-len)
+  (content-offset diff-line-content-offset)
+  (content diff-line-content))
+
 (define-record-type <status-options>
   (%make-status-options bytestructure)
   status-options?
@@ -355,6 +377,21 @@
       (make-pointer (bytestructure-ref bs 'head-to-index)))
      (pointer->diff-delta
       (make-pointer (bytestructure-ref bs 'index-to-workdir))))))
+
+(define (pointer->diff-line pointer)
+  (if (null-pointer? pointer)
+      #f
+      (let ((bs (pointer->bytestructure pointer %diff-line)))
+        (%make-diff-line
+         (bytestructure-ref bs 'origin)
+         (bytestructure-ref bs 'old-lineno)
+         (bytestructure-ref bs 'new-lineno)
+         (bytestructure-ref bs 'num-lines)
+         (bytestructure-ref bs 'content-len)
+         (bytestructure-ref bs 'content-offset)
+         (pointer->string
+           (make-pointer (bytestructure-ref bs 'content))
+           (bytestructure-ref bs 'content-len))))))
 
 ;; proxy options: https://libgit2.org/libgit2/#HEAD/type/git_proxy_options
 
