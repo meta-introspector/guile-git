@@ -92,6 +92,21 @@
             set-describe-format-options-always-use-long-format!
             set-describe-format-options-dirty-suffix!
 
+            make-diff-options-bytestructure diff-options->pointer diff-options->bytestsructure
+            set-diff-options-version!
+            set-diff-options-flags!
+            set-diff-options-ignore-submodules!
+            set-diff-options-pathspec!
+            set-diff-options-notify-cb!
+            set-diff-options-progress-cb!
+            set-diff-options-payload!
+            set-diff-options-context-lines!
+            set-diff-options-interhunk-lines!
+            set-diff-options-id-abbrev!
+            set-diff-options-max-size!
+            set-diff-options-old-prefix!
+            set-diff-options-new-prefix!
+
             remote-head? remote-head-local remote-head-oid remote-head-loid remote-head-name pointer->remote-head pointer->remote-head-list))
 
 
@@ -792,3 +807,83 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
 (define (set-describe-format-options-dirty-suffix! format-options dirty-suffix)
   (bytestructure-set! (describe-format-options-bytestructure format-options)
                       'dirty-suffix (pointer-address dirty-suffix)))
+
+;; git diff options
+
+(define %diff-options
+  (bs:struct `((version ,unsigned-int)
+               (flags ,uint32)
+               (ignore-submodules ,int) ;git_submodule_ignore_t
+               (pathspec ,%strarray) ;git_strarray
+               (notify-cb ,(bs:pointer void)) ;git_diff_notify_cb
+               (progress-cb ,(bs:pointer void)) ;git_diff_progress_cb
+               (payload ,(bs:pointer void))
+               (context-lines ,uint32)
+               (interhunk-lines ,uint32)
+               (id-abbrev ,uint16)
+               (max-size ,int64) ;git_off_t
+               (old-prefix ,(bs:pointer uint8)) ;char*
+               (new-prefix ,(bs:pointer uint8))))) ;char*
+
+(define-record-type <diff-options>
+  (%make-diff-options bytestructure)
+  diff-options?
+  (bytestructure diff-options-bytestructure))
+
+(define (diff-options->pointer options)
+  (bytestructure->pointer (diff-options-bytestructure options)))
+
+(define (make-diff-options-bytestructure)
+  (%make-diff-options (bytestructure %diff-options)))
+
+(define (set-diff-options-version! options version)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'version version))
+
+(define (set-diff-options-flags! options flags)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'flags flags))
+
+(define (set-diff-options-ignore-submodules! options ignore-submodules)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'ignore-submodules ignore-submodules))
+
+(define (set-diff-options-pathspec! options pathspec)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'pathspec pathspec))
+
+(define (set-diff-options-notify-cb! options notify-cb)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'notify-cb notify-cb))
+
+(define (set-diff-options-progress-cb! options progress-cb)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'progress-cb progress-cb))
+
+(define (set-diff-options-payload! options payload)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'payload payload))
+
+(define (set-diff-options-context-lines! options context-lines)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'context-lines context-lines))
+
+(define (set-diff-options-interhunk-lines! options interhunk-lines)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'interhunk-lines))
+
+(define (set-diff-options-id-abbrev! options id-abbrev)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'id-abbrev id-abbrev))
+
+(define (set-diff-options-max-size! options max-size)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'max-size max-size))
+
+(define (set-diff-options-old-prefix! options old-prefix)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'old-prefix old-prefix))
+
+(define (set-diff-options-new-prefix! options new-prefix)
+  (bytestructure-set! (diff-options-bytestructure options)
+                      'new-prefix new-prefix))

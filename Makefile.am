@@ -39,6 +39,7 @@ SOURCES =                           \
   git/commit.scm                    \
   git/cred.scm                      \
   git/describe.scm                  \
+  git/diff.scm                      \
   git/errors.scm                    \
   git/fetch.scm                     \
   git/oid.scm                       \

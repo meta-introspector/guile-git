@@ -34,7 +34,6 @@
             describe-result? pointer->describe-result describe-result->pointer
             diff? pointer->diff diff->pointer
             diff-delta? pointer->diff-delta diff-delta->pointer
-            diff-options? pointer->diff-options diff-options->pointer
             index? pointer->index index->pointer
             object? pointer->object object->pointer
             patch? pointer->patch patch->pointer
@@ -86,7 +85,6 @@
 (define-libgit2-type describe-result)
 (define-libgit2-type diff)
 (define-libgit2-type diff-delta)
-(define-libgit2-type diff-options)
 (define-libgit2-type index)
 (define-libgit2-type object)
 (define-libgit2-type patch)

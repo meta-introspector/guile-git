@@ -30,6 +30,7 @@
         (git clone)
         (git commit)
         (git describe)
+        (git diff)
         (git errors)
         (git fetch)
         (git object)
