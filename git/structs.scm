@@ -39,6 +39,7 @@
                                            void
                                            (int . ffi:int)))
   #:use-module (bytestructures guile)
+  #:use-module (rnrs bytevectors)
   #:use-module (ice-9 match)
   #:export (git-error? git-error-code git-error-message git-error-class pointer->git-error
             time->pointer pointer->time time-time time-offset
@@ -50,6 +51,8 @@
             diff-delta? diff-delta-status diff-delta-flags diff-delta-status diff-delta-nfiles diff-delta-old-file diff-delta-new-file
             diff-line? diff-line-origin diff-line-old-lineno diff-line-new-lineno diff-line-num-lines diff-line-content-len
             diff-line-content-offset diff-line-content pointer->diff-line
+            diff-hunk? diff-hunk-old-start diff-hunk-old-lines diff-hunk-new-start diff-hunk-new-lines diff-hunk-header-len diff-hunk-header
+            pointer->diff-hunk
 
             status-entry? status-entry-status status-entry-head-to-index status-entry-index-to-workdir pointer->status-entry
 
@@ -247,6 +250,14 @@
                (content-offset ,int64)
                (content ,(bs:pointer int8))))) ;char *
 
+(define %diff-hunk
+  (bs:struct `((old-start ,int)
+               (old-lines ,int)
+               (new-start ,int)
+               (new-lines ,int)
+               (header-len ,size_t)
+               (header ,(bs:vector 128 int8))))) ; char[128]
+
 (define (flags->symbols flags map-list)
   (fold (lambda (flag-map symbols)
           (match flag-map
@@ -317,6 +328,16 @@
   (content-len diff-line-content-len)
   (content-offset diff-line-content-offset)
   (content diff-line-content))
+
+(define-record-type <diff-hunk>
+  (%make-diff-hunk old-start old-lines new-start new-lines header-len header)
+  diff-hunk?
+  (old-start diff-hunk-old-start)
+  (old-lines diff-hunk-old-lines)
+  (new-start diff-hunk-new-start)
+  (new-lines diff-hunk-new-lines)
+  (header-len diff-hunk-header-len)
+  (header diff-hunk-header))
 
 (define-record-type <status-options>
   (%make-status-options bytestructure)
@@ -392,6 +413,21 @@
          (pointer->string
            (make-pointer (bytestructure-ref bs 'content))
            (bytestructure-ref bs 'content-len))))))
+
+(define (pointer->diff-hunk pointer)
+  (if (null-pointer? pointer)
+      #f
+      (let ((bs (pointer->bytestructure pointer %diff-hunk)))
+        (%make-diff-hunk
+         (bytestructure-ref bs 'old-start)
+         (bytestructure-ref bs 'old-lines)
+         (bytestructure-ref bs 'new-start)
+         (bytestructure-ref bs 'new-lines)
+         (bytestructure-ref bs 'header-len)
+         (let ((bv (bytestructure-bytevector (bytestructure-ref bs 'header)))
+               (output (make-bytevector (bytestructure-ref bs 'header-len))))
+           (bytevector-copy! bv 0 output 0 (bytestructure-ref bs 'header-len))
+           output)))))
 
 ;; proxy options: https://libgit2.org/libgit2/#HEAD/type/git_proxy_options
 
