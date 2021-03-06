@@ -41,6 +41,7 @@
             diff-tree-to-index
             diff-tree-to-tree
             diff-tree-to-workdir
+            diff-print
             diff->string))
 
 ;;; https://libgit2.org/libgit2/#HEAD/group/diff
@@ -120,6 +121,20 @@
               (tree->pointer old-tree)
               (diff-options->pointer options))
         (pointer->diff (dereference-pointer out))))))
+
+(define* diff-print
+  (let ((proc (libgit2->procedure* "git_diff_print" `(* ,int * *))))
+    (lambda* (diff callback #:optional (format GIT-DIFF-FORMAT-PATCH))
+      ;; Returning a non-zero value from the callbacks will terminate the
+      ;; iteration and return the non-zero value to the caller.
+      (let ((callback* (procedure->pointer int
+                                           (lambda (delta hunk line _)
+                                             (callback
+                                               (pointer->diff-delta delta)
+                                               (pointer->diff-hunk hunk)
+                                               (pointer->diff-line line)))
+                                           (list '* '* '* '*))))
+        (proc (diff->pointer diff) format callback* %null-pointer)))))
 
 (define* diff->string
   (let ((proc (libgit2->procedure* "git_diff_to_buf" `(* * ,int))))

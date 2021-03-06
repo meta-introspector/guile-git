@@ -49,6 +49,7 @@
             diff-file? diff-file-oid diff-file-path diff-file-size diff-file-flags diff-file-mode diff-file-id-abbrev
 
             diff-delta? diff-delta-status diff-delta-flags diff-delta-status diff-delta-nfiles diff-delta-old-file diff-delta-new-file
+            pointer->diff-delta
             diff-line? diff-line-origin diff-line-old-lineno diff-line-new-lineno diff-line-num-lines diff-line-content-len
             diff-line-content-offset diff-line-content pointer->diff-line
             diff-hunk? diff-hunk-old-start diff-hunk-old-lines diff-hunk-new-start diff-hunk-new-lines diff-hunk-header-len diff-hunk-header
