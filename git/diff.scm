@@ -34,6 +34,17 @@
             GIT-DIFF-FORMAT-NAME-ONLY
             GIT-DIFF-FORMAT-NAME-STATUS
             GIT-DIFF-FORMAT-PATCH-ID
+            GIT-DELTA-UNMODIFIED
+            GIT-DELTA-ADDED
+            GIT-DELTA-DELETED
+            GIT-DELTA-MODIFIED
+            GIT-DELTA-RENAMED
+            GIT-DELTA-COPIED
+            GIT-DELTA-IGNORED
+            GIT-DELTA-UNTRACKED
+            GIT-DELTA-TYPECHANGE
+            GIT-DELTA-UNREADABLE
+            GIT-DELTA-CONFLICTED
             
             make-diff-options
             diff-index-to-index
@@ -42,7 +53,8 @@
             diff-tree-to-tree
             diff-tree-to-workdir
             diff-print
-            diff->string))
+            diff->string
+            diff-foreach))
 
 ;;; https://libgit2.org/libgit2/#HEAD/group/diff
 (define DIFF-OPTIONS-VERSION 1)
@@ -59,6 +71,18 @@
 (define GIT-DIFF-FORMAT-NAME-ONLY 4)    ;; like git diff --name-only
 (define GIT-DIFF-FORMAT-NAME-STATUS 5)  ;; like git diff --name-status
 (define GIT-DIFF-FORMAT-PATCH-ID 6)     ;; git diff as used by git patch-id
+
+(define GIT-DELTA-UNMODIFIED 0)  ;; no changes
+(define GIT-DELTA-ADDED 1)       ;; entry does not exist in old version
+(define GIT-DELTA-DELETED 2)     ;; entry does not exist in new version
+(define GIT-DELTA-MODIFIED 3)    ;; entry content changed between old and new
+(define GIT-DELTA-RENAMED 4)     ;; entry was renamed between old and new
+(define GIT-DELTA-COPIED 5)      ;; entry was copied from another old entry
+(define GIT-DELTA-IGNORED 6)     ;; entry is ignored item in workdir
+(define GIT-DELTA-UNTRACKED 7)   ;; entry is untracked item in workdir
+(define GIT-DELTA-TYPECHANGE 8)  ;; type of entry changed between old and new
+(define GIT-DELTA-UNREADABLE 9)  ;; entry is unreadable
+(define GIT-DELTA-CONFLICTED 10) ;; entry in the index is conflicted
 
 (define make-diff-options
   ;; Return a <diff-options> structure for use with DIFF procedures.
@@ -142,3 +166,35 @@
       (let ((out (make-buffer)))
         (proc out (diff->pointer diff) format)
         (buffer-content/string out)))))
+
+(define* diff-foreach
+  (let ((proc (libgit2->procedure* "git_diff_foreach" '(* * * * * *))))
+    (lambda* (diff file-cb binary-cb hunk-cb line-cb)
+      ;; Returning a non-zero value from any of the callbacks will terminate
+      ;; the iteration and return the value to the user.
+      (let ((file-cb* (procedure->pointer int
+                                          (lambda (delta progress _)
+                                            (file-cb
+                                              (pointer->diff-delta delta)
+                                              progress))
+                                          (list '* float '*)))
+            (binary-cb* (procedure->pointer int
+                                            (lambda (delta binary _)
+                                              (binary-cb
+                                                (pointer->diff-delta delta)
+                                                (pointer->diff-binary binary)))
+                                            (list '* '* '*)))
+            (hunk-cb* (procedure->pointer int
+                                          (lambda (delta hunk _)
+                                            (hunk-cb
+                                              (pointer->diff-delta delta)
+                                              (pointer->diff-hunk hunk)))
+                                          (list '* '* '*)))
+            (line-cb* (procedure->pointer int
+                                          (lambda (delta hunk line _)
+                                            (line-cb
+                                              (pointer->diff-delta delta)
+                                              (pointer->diff-hunk hunk)
+                                              (pointer->diff-line line)))
+                                          (list '* '* '* '*))))
+        (proc (diff->pointer diff) file-cb* binary-cb* hunk-cb* line-cb* %null-pointer)))))

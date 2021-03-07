@@ -47,9 +47,12 @@
             oid? oid->pointer pointer->oid make-oid-pointer oid=?
 
             diff-file? diff-file-oid diff-file-path diff-file-size diff-file-flags diff-file-mode diff-file-id-abbrev
+            diff-binary-file? diff-binary-file-type diff-binary-file-data diff-binary-file-datalen diff-binary-file-inflatedlen
 
             diff-delta? diff-delta-status diff-delta-flags diff-delta-status diff-delta-nfiles diff-delta-old-file diff-delta-new-file
             pointer->diff-delta
+            diff-binary? diff-binary-contains-data diff-binary-old-file diff-binary-new-file
+            pointer->diff-binary
             diff-line? diff-line-origin diff-line-old-lineno diff-line-new-lineno diff-line-num-lines diff-line-content-len
             diff-line-content-offset diff-line-content pointer->diff-line
             diff-hunk? diff-hunk-old-start diff-hunk-old-lines diff-hunk-new-start diff-hunk-new-lines diff-hunk-header-len diff-hunk-header
@@ -229,6 +232,12 @@
                (mode ,uint16)
                (id-abbrev ,uint16))))
 
+(define %diff-binary-file
+  (bs:struct `((type ,int)
+               (data ,(bs:pointer uint8))
+               (datalen ,size_t)
+               (inflatedlen ,size_t))))
+
 (define %diff-delta
   (bs:struct `((status ,int)
                (flags ,uint32)
@@ -236,6 +245,11 @@
                (nfiles ,uint16)
                (old-file ,%diff-file)
                (new-file ,%diff-file))))
+
+(define %diff-binary
+  (bs:struct `((contains-data ,int)
+               (old-file ,%diff-binary-file)
+               (new-file ,%diff-binary-file))))
 
 (define %status-entry
   (bs:struct `((status ,int)
@@ -302,6 +316,14 @@
   (mode diff-file-mode)
   (id-abbrev diff-file-id-abbrev))
 
+(define-record-type <diff-binary-file>
+  (%make-diff-binary-file type data datalen inflatedlen)
+  diff-binary-file?
+  (type diff-binary-file-type)
+  (data diff-binary-file-data)
+  (datalen diff-binary-file-datalen)
+  (inflatedlen diff-binary-file-inflatedlen))
+
 (define-record-type <diff-delta>
   (%make-diff-delta status flags similarity nfiles old-file new-file)
   diff-delta?
@@ -311,6 +333,13 @@
   (nfiles diff-delta-nfiles)
   (old-file diff-delta-old-file)
   (new-file diff-delta-new-file))
+
+(define-record-type <diff-binary>
+  (%make-diff-binary contains-data old-file new-file)
+  diff-binary?
+  (contains-data diff-binary-contains-data)
+  (old-file diff-binary-old-file)
+  (new-file diff-binary-new-file))
 
 (define-record-type <status-entry>
   (%make-status-entry status head-to-index index-to-workdir)
@@ -379,6 +408,17 @@
    (bytestructure-ref bs 'mode)
    (bytestructure-ref bs 'id-abbrev)))
 
+(define (bs-diff-binary-file->diff-binary-file bs)
+  (%make-diff-binary-file
+   (bytestructure-ref bs 'type)
+   (let ((data (make-pointer (bytestructure-ref bs 'data))))
+     (if (null-pointer? data)
+         #()
+         (pointer->bytevector (make-pointer data)
+                              (bytestructure-ref bs 'datalen))))
+   (bytestructure-ref bs 'datalen)
+   (bytestructure-ref bs 'inflatedlen)))
+
 (define (pointer->diff-delta pointer)
   (if (null-pointer? pointer)
       #f
@@ -390,6 +430,15 @@
          (bytestructure-ref bs 'nfiles)
          (bs-diff-file->diff-file (bytestructure-ref bs 'old-file))
          (bs-diff-file->diff-file (bytestructure-ref bs 'new-file))))))
+
+(define (pointer->diff-binary pointer)
+  (if (null-pointer? pointer)
+      #f
+      (let ((bs (pointer->bytestructure pointer %diff-binary)))
+        (%make-diff-binary
+         (bytestructure-ref bs 'contains-data)
+         (bs-diff-binary-file->diff-binary-file (bytestructure-ref bs 'old-file))
+         (bs-diff-binary-file->diff-binary-file (bytestructure-ref bs 'new-file))))))
 
 (define (pointer->status-entry pointer)
   (let ((bs (pointer->bytestructure pointer %status-entry)))
