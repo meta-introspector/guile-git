@@ -84,6 +84,7 @@ TESTS =                                         \
   tests/clone.scm                               \
   tests/commit.scm                              \
   tests/describe.scm                            \
+  tests/diff.scm                                \
   tests/oid.scm                                 \
   tests/proxy.scm                               \
   tests/reference.scm                           \
