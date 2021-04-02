@@ -35,6 +35,7 @@
             tree-entry-byname
             tree-entry-bypath
             tree-entry-name
+            tree-entry-type
             tree-entry-id
             tree-entry->object
 
@@ -130,7 +131,10 @@
         (proc out (repository->pointer repository) (tree-entry->pointer entry))
         (pointer->object! (dereference-pointer out))))))
 
-;; FIXME: https://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entry_type
+(define tree-entry-type
+  (let ((proc (libgit2->procedure int "git_tree_entry_type" '(*))))
+    (lambda (entry)
+      (proc (tree-entry->pointer entry)))))
 
 ;; FIXME: https://libgit2.github.com/libgit2/#HEAD/group/tree/git_tree_entrycount
 

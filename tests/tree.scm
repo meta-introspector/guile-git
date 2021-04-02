@@ -74,6 +74,14 @@
            (commit (commit-lookup repository oid))
            (tree (commit-tree commit)))
       (tree-entry-name (tree-entry-bypath tree "directory/message"))))
+
+  (test-equal "tree-entry-type"
+    OBJ-BLOB
+    (let* ((repository (repository-open directory))
+           (oid (reference-target (repository-head repository)))
+           (commit (commit-lookup repository oid))
+           (tree (commit-tree commit)))
+      (tree-entry-type (tree-entry-bypath tree "directory/message"))))
   )
 
 
