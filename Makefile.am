@@ -67,7 +67,7 @@ SOURCES =                           \
   git/web/repository.scm
 
 NODIST_SOURCES =                    \
-  git/config.scm
+  git/configuration.scm
 
 TESTS_UTILS =                                   \
   tests/helpers.scm                             \

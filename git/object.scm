@@ -22,7 +22,7 @@
   #:use-module (system foreign)
   #:use-module (rnrs bytevectors)
   #:use-module (git bindings)
-  #:use-module (git config)
+  #:use-module (git configuration)
   #:use-module (git types)
   #:use-module (git structs)
   #:export (OBJ-ANY

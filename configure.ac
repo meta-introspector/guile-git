@@ -61,7 +61,7 @@ AC_PATH_PROG([SSH_ADD], [ssh-add])
 AC_PATH_PROG([GIT_UPLOAD_PACK], [git-upload-pack])
 AC_SUBST([SSHD])
 
-AC_CONFIG_FILES([Makefile git/config.scm tests/ssh.scm])
+AC_CONFIG_FILES([Makefile git/configuration.scm tests/ssh.scm])
 AC_CONFIG_FILES([pre-inst-env], [chmod +x pre-inst-env])
 
 if test "$cross_compiling" != no; then

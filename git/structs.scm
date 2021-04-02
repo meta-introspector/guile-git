@@ -25,7 +25,7 @@
   #:use-module (rnrs bytevectors)
   #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-9)
-  #:use-module (git config)
+  #:use-module (git configuration)
   #:use-module ((system foreign) #:select (null-pointer?
                                            bytevector->pointer
                                            make-pointer

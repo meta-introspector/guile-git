@@ -24,7 +24,7 @@
   #:use-module (system foreign)
   #:use-module (ice-9 match)
   #:use-module (srfi srfi-1)
-  #:use-module (git config)
+  #:use-module (git configuration)
   #:use-module (git types)
   #:use-module (git structs)
   #:export (libgit2->pointer
