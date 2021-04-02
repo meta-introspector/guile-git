@@ -81,6 +81,33 @@ index b075b00..0000000
              0))))
       count))
 
+  (test-equal "diff fold"
+    '(1 0 1 1)
+    (let* ((repository (repository-open directory))
+           (oid (reference-target (repository-head repository)))
+           (commit1 (commit-lookup repository oid))
+           (commit2 (commit-parent commit1))
+           (diff (diff-tree-to-tree repository (commit-tree commit1) (commit-tree commit2))))
+      (diff-fold
+        (lambda (delta progress count)
+          (match count
+            ((f b h l)
+             `(,(+ f 1) ,b ,h ,l))))
+        (lambda (delta binary count)
+          (match count
+            ((f b h l)
+             `(,f ,(+ b 1) ,h ,l))))
+        (lambda (delta hunk count)
+          (match count
+            ((f b h l)
+             `(,f ,b ,(+ h 1) ,l))))
+        (lambda (delta hunk line count)
+          (match count
+            ((f b h l)
+             `(,f ,b ,h ,(+ l 1)))))
+        '(0 0 0 0)
+        diff)))
+
   (test-equal "diff filename"
     "directory/message"
     (let* ((repository (repository-open directory))

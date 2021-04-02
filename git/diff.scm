@@ -54,7 +54,8 @@
             diff-tree-to-workdir
             diff-print
             diff->string
-            diff-foreach))
+            diff-foreach
+            diff-fold))
 
 ;;; https://libgit2.org/libgit2/#HEAD/group/diff
 (define DIFF-OPTIONS-VERSION 1)
@@ -198,3 +199,21 @@
                                               (pointer->diff-line line)))
                                           (list '* '* '* '*))))
         (proc (diff->pointer diff) file-cb* binary-cb* hunk-cb* line-cb* %null-pointer)))))
+
+(define (diff-fold file-proc binary-proc hunk-proc line-proc knil diff)
+  (let ((out knil))
+    (diff-foreach
+      diff
+      (lambda (delta progress)
+        (set! out (file-proc delta progress out))
+        0)
+      (lambda (delta binary)
+        (set! out (binary-proc delta binary out))
+        0)
+      (lambda (delta hunk)
+        (set! out (hunk-proc delta hunk out))
+        0)
+      (lambda (delta hunk line)
+        (set! out (line-proc delta hunk line out))
+        0))
+    out))
