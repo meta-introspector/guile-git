@@ -92,6 +92,11 @@
       (tag-foreach repository (lambda (name oid) (set! count (+ count 1)) 0))
       count))
 
+  (test-equal "tag fold"
+    2
+    (let ((repository (repository-open directory)))
+      (tag-fold (lambda (name oid count) (+ count 1)) 0 repository)))
+
   )
 
 (libgit2-shutdown!)

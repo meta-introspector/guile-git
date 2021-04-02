@@ -35,7 +35,8 @@
             tag-create!
             tag-create-lightweight
             tag-create-lightweight!
-            tag-foreach))
+            tag-foreach
+            tag-fold))
 
 (define %tag-free (libgit2->pointer "git_tag_free"))
 
@@ -121,3 +122,12 @@
                                                (pointer->oid oid)))
                                            '(* * *))))
         (proc (repository->pointer repository) callback* %null-pointer)))))
+
+(define (tag-fold proc knil repository)
+  (let ((out knil))
+    (tag-foreach
+      repository
+      (lambda (name oid)
+        (set! out (proc name oid out))
+        0))
+    out))
