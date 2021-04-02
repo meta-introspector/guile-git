@@ -58,6 +58,9 @@
             diff-hunk? diff-hunk-old-start diff-hunk-old-lines diff-hunk-new-start diff-hunk-new-lines diff-hunk-header-len diff-hunk-header
             pointer->diff-hunk
 
+            config-entry? pointer->config-entry config-entry->pointer
+            config-entry-name config-entry-value config-entry-include-depth config-entry-level
+
             status-entry? status-entry-status status-entry-head-to-index status-entry-index-to-workdir pointer->status-entry
 
             make-status-options-bytestructure status-options->pointer set-status-options-show! set-status-options-flags!
@@ -478,6 +481,38 @@
                (output (make-bytevector (bytestructure-ref bs 'header-len))))
            (bytevector-copy! bv 0 output 0 (bytestructure-ref bs 'header-len))
            output)))))
+
+;; config entry
+
+(define %config-entry (bs:struct `((name ,(bs:pointer uint8)) ; char *
+                                   (value ,(bs:pointer uint8)) ; char *
+                                   (include-depth ,uint64)
+                                   (level ,int) ; git_config_level_t
+                                   (free ,(bs:pointer int))
+                                   (payload ,(bs:pointer int)))))
+
+(define-record-type <config-entry>
+  (%make-config-entry bytestructure)
+  config-entry?
+  (bytestructure config-entry-bytestructure))
+
+(define (pointer->config-entry pointer)
+  (%make-config-entry (pointer->bytestructure pointer %config-entry)))
+
+(define (config-entry->pointer entry)
+  (bytestructure->pointer (config-entry-bytestructure entry)))
+
+(define (config-entry-name entry)
+  (pointer->string (make-pointer (bytestructure-ref (config-entry-bytestructure entry) 'name))))
+
+(define (config-entry-value entry)
+  (pointer->string (make-pointer (bytestructure-ref (config-entry-bytestructure entry) 'value))))
+
+(define (config-entry-include-depth entry)
+  (bytestructure-ref (config-entry-bytestructure entry) 'include-depth))
+
+(define (config-entry-level entry)
+  (bytestructure-ref (config-entry-bytestructure entry) 'level))
 
 ;; proxy options: https://libgit2.org/libgit2/#HEAD/type/git_proxy_options
 

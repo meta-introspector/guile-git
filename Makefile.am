@@ -37,6 +37,7 @@ SOURCES =                           \
   git/cherrypick.scm                \
   git/clone.scm                     \
   git/commit.scm                    \
+  git/config.scm                    \
   git/cred.scm                      \
   git/describe.scm                  \
   git/diff.scm                      \
@@ -83,6 +84,7 @@ TESTS =                                         \
   tests/branch.scm                              \
   tests/clone.scm                               \
   tests/commit.scm                              \
+  tests/config.scm                              \
   tests/describe.scm                            \
   tests/diff.scm                                \
   tests/oid.scm                                 \

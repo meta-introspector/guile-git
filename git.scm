@@ -29,6 +29,7 @@
         (git branch)
         (git clone)
         (git commit)
+        (git config)
         (git describe)
         (git diff)
         (git errors)
