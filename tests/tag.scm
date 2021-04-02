@@ -85,6 +85,13 @@
            (oid (reference-name->oid repository "refs/tags/1.0")))
       (tag-message (tag-lookup repository oid))))
 
+  (test-equal "tag foreach"
+    2
+    (let* ((repository (repository-open directory))
+           (count 0))
+      (tag-foreach repository (lambda (name oid) (set! count (+ count 1)) 0))
+      count))
+
   )
 
 (libgit2-shutdown!)

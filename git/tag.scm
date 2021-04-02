@@ -34,7 +34,8 @@
             tag-create
             tag-create!
             tag-create-lightweight
-            tag-create-lightweight!))
+            tag-create-lightweight!
+            tag-foreach))
 
 (define %tag-free (libgit2->pointer "git_tag_free"))
 
@@ -108,3 +109,15 @@
 (define tag-create-lightweight!
   (lambda (repository name target)
     (tag-create-lightweight repository name target #t)))
+
+(define tag-foreach
+  (let ((proc (libgit2->procedure* "git_tag_foreach"
+                                   `(* * *))))
+    (lambda (repository callback)
+      (let ((callback* (procedure->pointer int
+                                           (lambda (name oid _)
+                                             (callback
+                                               (pointer->string name)
+                                               (pointer->oid oid)))
+                                           '(* * *))))
+        (proc (repository->pointer repository) callback* %null-pointer)))))
