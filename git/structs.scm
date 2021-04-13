@@ -77,7 +77,7 @@
             indexer-progress-received-objects
             indexer-progress-local-objects
             indexer-progress-total-deltas
-            indexer-progress-total-deltas
+            indexer-progress-indexed-deltas
             indexer-progress-received-bytes
 
             proxy-options?
@@ -611,7 +611,7 @@ type to 'specified for this to take effect."
   (received-objects indexer-progress-received-objects)
   (local-objects    indexer-progress-local-objects)
   (total-deltas     indexer-progress-total-deltas)
-  (indexed-deltas   indexer-progress-total-deltas)
+  (indexed-deltas   indexer-progress-indexed-deltas)
   (received-bytes   indexer-progress-received-bytes))
 
 (define (bytestructure->indexer-progress bs)
