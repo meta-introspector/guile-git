@@ -3,11 +3,53 @@
 
 
 Copyright © 2018, 2019, 2020 Erik Edrosa
+Copyright © 2021 Ludovic Courtès
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.  This file is offered as-is,
   without any warranty.
+
+* Changes in 0.5.0 (since 0.4.0)
+
+** New functionality
+
+*** New diff bindings in (git diff)
+
+These bindings allow you to compute and print a diff between two
+different trees.
+
+*** New configuration parsing support in (git config)
+
+This new module provides an interface to obtain configuration value as
+you would do on with the ~git config~ command.
+
+As a corollary, it introduces an incompatible change: the internal
+module previously known as ~(git config)~ has been renamed to
+~(git configuration)~.  It is not meant to be used directly by
+applications though, so you should not notice it.
+
+*** New tag procedures: ‘tag-fold’, ‘tag-foreach’
+
+*** New tree procedures: ‘tree-entry-byname’, ‘tree-entry-type’
+
+*** New remote procedures: ‘remote-url’, ‘remote-set-url!’
+
+*** Submodule interface changes
+
+The ~submodule-update~ procedure accepts the new ~#:allow-fetch?~ and
+~#:fetch-options~ arguments.  The latter allows you to specify “fetch
+options”, such as the URL of an HTTP/HTTPS proxy.
+
+There’s also a new ~submodule-set-url!~ procedure.
+
+** Bug fixes
+
+*** commit: Prevent dangling repository references
+    https://gitlab.com/guile-git/guile-git/-/issues/21
+
+*** Fix “make check” for tests involving SSH
+
 
 * Changes in 0.4.0 (since 0.3.0)
 
