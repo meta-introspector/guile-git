@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2016, 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2016, 2017, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;;
 ;;; This file is part of Guile-Git.
@@ -96,12 +96,12 @@
 
 (define (buffer-content buf)
   (match (parse-c-struct buf %buffer-struct)
-    ((pointer asize size)
+    ((pointer _ size)
      (pointer->bytevector pointer size))))
 
 (define (buffer-content/string buf)
   (match (parse-c-struct buf %buffer-struct)
-    ((pointer asize size)
+    ((pointer _ size)
      (pointer->string pointer size "UTF-8"))))
 
 

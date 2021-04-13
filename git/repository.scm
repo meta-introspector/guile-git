@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2018 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2018, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -130,9 +130,7 @@
   (let ((proc (libgit2->procedure* "git_repository_ident" '(* * *))))
     (lambda (repository)
       (let* ((name (make-bytevector (sizeof '*)))
-             (name* ((bytevector->pointer name)))
-             (email (make-bytevector (sizeof '*)))
-             (email* ((bytevector->pointer email))))
+             (email (make-bytevector (sizeof '*))))
         (proc name email (repository->pointer repository))
         (values (pointer->string (make-pointer (u64vector-ref name 0)))
                 (pointer->string (make-pointer (u64vector-ref email 0))))))))

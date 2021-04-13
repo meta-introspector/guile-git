@@ -195,8 +195,7 @@ ready to be committed (but doesn't actually do the commit)."
   (let ((proc (libgit2->procedure* "git_submodule_update_options_init"
                                    `(* ,unsigned-int))))
     (lambda ()
-      (let* ((options (make-submodule-update-options-bytestructure))
-             (bs      (submodule-update-options-bytestructure options)))
+      (let ((options (make-submodule-update-options-bytestructure)))
         (proc (submodule-update-options->pointer options)
               GIT-SUBMODULE-UPDATE-OPTIONS-VERSION)
         options))))
