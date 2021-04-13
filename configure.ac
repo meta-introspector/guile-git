@@ -1,6 +1,6 @@
 dnl Guile-Git --- GNU Guile bindings of libgit2
 dnl Copyright © 2016-2018 Erik Edrosa <erik.edrosa@gmail.com>
-dnl Copyright © 2017, 2019, 2020 Ludovic Courtès <ludo@gnu.org>
+dnl Copyright © 2017, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
 dnl Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 dnl
 dnl This file is part of Guile-Git.
@@ -18,7 +18,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with Guile-Git.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([Guile-Git], [0.4.0], [], [], [https://gitlab.com/guile-git/guile-git/])
+AC_INIT([Guile-Git], [0.5.0], [], [], [https://gitlab.com/guile-git/guile-git/])
 AC_CONFIG_SRCDIR(git)
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
