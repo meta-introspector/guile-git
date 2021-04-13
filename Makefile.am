@@ -123,3 +123,17 @@ EXTRA_DIST +=                       \
   static/README                     \
   $(TESTS)                          \
   $(TESTS_UTILS)
+
+check-local:
+        # 'tests/ssh.scm' needs a writable '.ssh' directory where it
+        # can create config files.  Create it.
+	@if [ "$(abs_top_builddir)" != "$(abs_top_srcdir)" ]; then              \
+	  rm -r "$(abs_top_builddir)/tests/.ssh" ;                              \
+	  cp -r "$(abs_top_srcdir)/tests/.ssh" "$(abs_top_builddir)/tests" ;    \
+	  chmod 700 "$(abs_top_builddir)/tests/.ssh" ;                          \
+	fi
+
+clean-local:
+	@if [ "$(abs_top_builddir)" != "$(abs_top_srcdir)" ]; then              \
+	  rm -r "$(abs_top_builddir)/tests/.ssh" ;                              \
+	fi
