@@ -1,5 +1,6 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2021 Julien Lepiller <julien@lepiller.eu>
+;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -107,6 +108,33 @@ index b075b00..0000000
              `(,f ,b ,h ,(+ l 1)))))
         '(0 0 0 0)
         diff)))
+
+  (test-equal "diff fold, capture deltas"
+    '("directory/message")
+    (let* ((repository (repository-open directory))
+           (oid (reference-target (repository-head repository)))
+           (commit1 (commit-lookup repository oid))
+           (commit2 (commit-parent commit1))
+           (diff (diff-tree-to-tree repository
+                                    (commit-tree commit1)
+                                    (commit-tree commit2))))
+      (define deltas
+        (diff-fold
+         (lambda (delta progress lst)
+           (gc)
+           (cons delta lst))
+         (lambda (delta binary lst)
+           (cons delta lst))
+         (lambda (delta hunk lst)
+           lst)
+         (lambda (delta hunk line lst)
+           lst)
+         '()
+         diff))
+
+      ;; Make sure the <diff-delta> objects are still valid once 'diff-fold'
+      ;; has returned.
+      (map (compose diff-file-path diff-delta-old-file) deltas)))
 
   (test-equal "diff filename"
     "directory/message"
