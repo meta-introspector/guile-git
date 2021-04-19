@@ -58,7 +58,7 @@
             diff-hunk? diff-hunk-old-start diff-hunk-old-lines diff-hunk-new-start diff-hunk-new-lines diff-hunk-header-len diff-hunk-header
             pointer->diff-hunk
 
-            config-entry? pointer->config-entry config-entry->pointer
+            config-entry? pointer->config-entry
             config-entry-name config-entry-value config-entry-include-depth config-entry-level
 
             status-entry? status-entry-status status-entry-head-to-index status-entry-index-to-workdir pointer->status-entry
@@ -492,27 +492,25 @@
                                    (payload ,(bs:pointer int)))))
 
 (define-record-type <config-entry>
-  (%make-config-entry bytestructure)
+  (%make-config-entry name value depth level)
   config-entry?
-  (bytestructure config-entry-bytestructure))
+  (name   config-entry-name)
+  (value  config-entry-value)
+  (depth  config-entry-include-depth)
+  (level  config-entry-level))
 
 (define (pointer->config-entry pointer)
-  (%make-config-entry (pointer->bytestructure pointer %config-entry)))
+  "Return a <config-entry> record based on the 'git_config_entry' struct
+pointed to by POINTER.  The data pointed to be POINTER is not freed."
+  (define bs (pointer->bytestructure pointer %config-entry))
 
-(define (config-entry->pointer entry)
-  (bytestructure->pointer (config-entry-bytestructure entry)))
-
-(define (config-entry-name entry)
-  (pointer->string (make-pointer (bytestructure-ref (config-entry-bytestructure entry) 'name))))
-
-(define (config-entry-value entry)
-  (pointer->string (make-pointer (bytestructure-ref (config-entry-bytestructure entry) 'value))))
-
-(define (config-entry-include-depth entry)
-  (bytestructure-ref (config-entry-bytestructure entry) 'include-depth))
-
-(define (config-entry-level entry)
-  (bytestructure-ref (config-entry-bytestructure entry) 'level))
+  ;; Duplicate the structure POINTER refers to so that users can capture it
+  ;; and pass it around.
+  (%make-config-entry
+   (pointer->string (make-pointer (bytestructure-ref bs 'name)))
+   (pointer->string (make-pointer (bytestructure-ref bs 'value)))
+   (bytestructure-ref bs 'include-depth)
+   (bytestructure-ref bs 'level)))
 
 ;; proxy options: https://libgit2.org/libgit2/#HEAD/type/git_proxy_options
 

@@ -1,5 +1,6 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2021 Julien Lepiller <julien@lepiller.eu>
+;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -51,11 +52,29 @@
     (let* ((repository (repository-open directory))
            (config (repository-config repository)))
       (config-fold (lambda (entry out)
+                     (gc)
                      (format #t "~a~%" entry)
                      (if (equal? (config-entry-name entry) "core.bare")
                          (config-entry-value entry)
                          out))
-                   #f config))))
+                   #f config)))
+
+  (test-assert "config entry fold, capture entries"
+    ;; Purposefully capture the <config-entry> record passed by 'config-fold'
+    ;; and make sure we can access them after 'config-fold' has returned.
+    (let* ((repository (repository-open directory))
+           (config     (repository-config repository))
+           (entries    (config-fold cons '() config))
+           (keys       '("core.bare" "core.filemode"
+                         "core.repositoryformatversion")))
+      (gc)
+
+      ;; Since ~/.gitconfig can add arbitrary entries, only look at KEYS.
+      (equal? (sort (filter (lambda (name)
+                              (member name keys))
+                            (map config-entry-name entries))
+                    string<?)
+              keys))))
 
 (libgit2-shutdown!)
 

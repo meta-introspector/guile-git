@@ -1,5 +1,6 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2021 Julien Lepiller <julien@lepiller.eu>
+;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -27,18 +28,19 @@
 
 ;;; config https://libgit2.github.com/libgit2/#HEAD/group/config
 
-(define %config-entry-free (libgit2->pointer "git_config_entry_free"))
-
-(define (pointer->config-entry! pointer)
-    (set-pointer-finalizer! pointer %config-entry-free)
-      (pointer->config-entry pointer))
+(define %config-entry-free!
+  (libgit2->procedure void "git_config_entry_free" '(*)))
 
 (define config-foreach
-  (let ((proc (libgit2->procedure* "git_config_foreach" '(* * *))))
+  (let ((proc (libgit2->procedure* "git_config_foreach" '(* * *)))
+        (wrap (lambda (callback)
+                (lambda (ptr _)
+                  ;; Note: do *not* call %CONFIG-ENTRY-FREE! on PTR since PTR
+                  ;; is documented as being valid only for the duration of
+                  ;; the iteration.
+                  (callback (pointer->config-entry ptr))))))
     (lambda (config callback)
-      (let ((callback* (procedure->pointer int
-                                           (lambda (entry _)
-                                             (callback (pointer->config-entry! entry)))
+      (let ((callback* (procedure->pointer int (wrap callback)
                                            (list '* '*))))
         (proc (config->pointer config) callback* %null-pointer)))))
 
@@ -56,4 +58,8 @@
     (lambda (config name)
       (let ((out (make-double-pointer)))
         (proc out (config->pointer config) (string->pointer name))
-        (pointer->config-entry! (dereference-pointer out))))))
+        (let* ((ptr   (dereference-pointer out))
+               (entry (pointer->config-entry ptr)))
+          ;; It's our responsibility to free PTR.
+          (%config-entry-free! ptr)
+          entry)))))
