@@ -40,11 +40,15 @@
                   ;; the iteration.
                   (callback (pointer->config-entry ptr))))))
     (lambda (config callback)
+      "Iterate over all the entries of CONFIG, passing each config entry to
+CALLBACK, a one-argument procedure.  The result is unspecified."
       (let ((callback* (procedure->pointer int (wrap callback)
                                            (list '* '*))))
         (proc (config->pointer config) callback* %null-pointer)))))
 
 (define (config-fold proc knil config)
+  "Fold over the entries of CONFIG and return the result.  For each entry,
+PROC is passed the entry and the previous result, starting from KNIL."
   (let ((out knil))
     (config-foreach
       config
