@@ -56,6 +56,10 @@
 (define config-get-entry
   (let ((proc (libgit2->procedure* "git_config_get_entry" '(* * *))))
     (lambda (config name)
+      "Return the entry NAME for CONFIG, where NAME is a string such as
+\"core.bare\" or \"remote.origin.url\".  Raise an exception if NAME was not
+found."
+      ;; FIXME: Return #f upon GIT_ENOTFOUND?
       (let ((out (make-double-pointer)))
         (proc out (config->pointer config) (string->pointer name))
         (let* ((ptr   (dereference-pointer out))

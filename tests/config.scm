@@ -36,6 +36,16 @@
            (entry (config-get-entry config "core.bare")))
       (config-entry-value entry)))
 
+  (test-equal "config entry get, nonexistent"
+    GIT_ENOTFOUND
+    (catch 'git-error
+      (lambda ()
+        (let* ((repository (repository-open directory))
+               (config (repository-config repository)))
+          (config-get-entry config "something.that.does-not-exist")))
+      (lambda (key error . rest)
+        (git-error-code error))))
+
   (test-equal "config entry"
     "true"
     (let* ((repository (repository-open directory))
