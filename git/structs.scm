@@ -501,7 +501,7 @@
 
 (define (pointer->config-entry pointer)
   "Return a <config-entry> record based on the 'git_config_entry' struct
-pointed to by POINTER.  The data pointed to be POINTER is not freed."
+pointed to by POINTER.  The data pointed to by POINTER is not freed."
   (define bs (pointer->bytestructure pointer %config-entry))
 
   ;; Duplicate the structure POINTER refers to so that users can capture it
