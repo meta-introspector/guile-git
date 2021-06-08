@@ -1,5 +1,5 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
-;;; Copyright © 2019 Marius Bakke <marius@devup.no>
+;;; Copyright © 2019, 2021 Marius Bakke <marius@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -17,7 +17,8 @@
 ;;; along with Guile-Git.  If not, see <http://www.gnu.org/licenses/>.
 
 (define-module (tests describe)
-  #:use-module (srfi srfi-64))
+  #:use-module (srfi srfi-64)
+  #:use-module (srfi srfi-71))
 
 (use-modules (tests helpers))
 (use-modules (git))
@@ -136,7 +137,19 @@
     (let* ((repository (repository-open directory))
            (format-options (make-describe-format-options
                             #:dirty-suffix "-dirty")))
-      (describe-format (describe-workdir repository) format-options))))
+      (describe-format (describe-workdir repository) format-options)))
+
+  (test-equal "describe-checkout"
+    '("3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b" "0.2-rc1")
+    (let ((commit pretty (describe-checkout directory)))
+      (list commit pretty)))
+
+  (test-equal "describe-checkout, default options"
+    '("3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b" "0.1-1-g3f848a1")
+    (let ((commit pretty (describe-checkout directory (make-describe-options))))
+      (list commit pretty)))
+
+  )
 
 (libgit2-shutdown!)
 

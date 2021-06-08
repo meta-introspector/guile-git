@@ -1,5 +1,5 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
-;;; Copyright © 2019 Marius Bakke <marius@devup.no>
+;;; Copyright © 2019, 2021 Marius Bakke <marius@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -22,6 +22,10 @@
   #:use-module (git bindings)
   #:use-module (git types)
   #:use-module (git structs)
+  #:use-module (git repository)
+  #:use-module (git reference)
+  #:use-module (git commit)
+  #:use-module (git oid)
   #:export (DESCRIBE-MAX-CANDIDATES
             DESCRIBE-STRATEGY-DEFAULT
             DESCRIBE-STRATEGY-TAGS
@@ -38,7 +42,9 @@
             DESCRIBE-FORMAT-ALWAYS-USE-LONG-FORMAT?
             DESCRIBE-FORMAT-DIRTY-SUFFIX
             make-describe-format-options
-            describe-format))
+            describe-format
+
+            describe-checkout))
 
 ;;; https://libgit2.org/libgit2/#HEAD/group/describe
 
@@ -164,3 +170,19 @@
         (let ((out* (buffer-content/string out)))
           (free-buffer out)
           out*)))))
+
+
+;; Describe CHECKOUT, optionally with OPTIONS, and return two values:
+;; the current HEAD and its \"pretty name\".
+(define describe-checkout
+  (lambda* (checkout #:optional (options (make-describe-options
+                                          ;; Consider unannotated tags.
+                                          #:strategy 'tags
+                                          ;; ...but not their ancestors.
+                                          #:only-follow-first-parent? #t)))
+    (let* ((repo (repository-open checkout))
+           (head (reference-target (repository-head repo)))
+           (commit (commit-lookup repo head))
+           (description (describe-commit commit options)))
+      (repository-close! repo)
+      (values (oid->string head) (describe-format description)))))
