@@ -718,9 +718,21 @@ tag policy in FETCH-OPTIONS."
                       'download-tags
                       (symbol->remote-autotag-option policy)))
 
-(define (fetch-options-remote-callbacks fetch-options)
-  (%make-remote-callbacks
-   (bytestructure-ref (fetch-options-bytestructure fetch-options) 'callbacks)))
+(define fetch-options-remote-callbacks
+  (let ((cache (make-weak-key-hash-table 20)))
+    (lambda (fetch-options)
+      "Return the <remote-callbacks> associated with FETCH-OPTIONS."
+      ;; This cache ensures that the <remote-callbacks> record remains live
+      ;; as long as FETCH-OPTIONS is live, which in turn allows
+      ;; 'set-remote-callbacks-transfer-progress!' to have a similar
+      ;; lifecycle hash table.
+      (or (hashq-ref cache fetch-options)
+          (let ((callbacks
+                 (%make-remote-callbacks
+                  (bytestructure-ref (fetch-options-bytestructure fetch-options)
+                                     'callbacks))))
+            (hashq-set! cache fetch-options callbacks)
+            callbacks)))))
 
 (define (set-remote-callbacks-credentials! callbacks credentials)
   (bytestructure-set! (remote-callbacks-bytestructure callbacks)
@@ -741,15 +753,24 @@ tag policy in FETCH-OPTIONS."
                             -1))
                       '(* *)))
 
+
+(define %weak-references
+  ;; Weak references: values in this table must be kept live as long as their
+  ;; key is live.
+  (make-weak-key-hash-table 100))
+
 (define (set-remote-callbacks-transfer-progress! callbacks proc)
   "Set PROC as a transfer-progress callback in CALLBACKS.  PROC will be
 called periodically as data if fetched from the remote, with one argument: an
 indexer progress record.  PROC can cancel the on-going transfer by returning
 #f."
-  (bytestructure-set! (remote-callbacks-bytestructure callbacks)
-                      'transfer-progress
-                      (pointer-address
-                       (procedure->indexer-progress-callback proc))))
+  (let ((ptr (procedure->indexer-progress-callback proc)))
+    ;; Make sure the pointer object remains live for as long as CALLBACKS;
+    ;; otherwise the underlying libffi closure could be finalized too early.
+    (hashq-set! %weak-references callbacks ptr)
+    (bytestructure-set! (remote-callbacks-bytestructure callbacks)
+                        'transfer-progress
+                        (pointer-address ptr))))
 
 (define (fetch-options-proxy-options fetch-options)
   "Return the <proxy-options> record associated with FETCH-OPTIONS."
@@ -842,7 +863,12 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
   (let ((bs (submodule-update-options-bytestructure submodule-update-options))
         (fetch-options-bs (fetch-options-bytestructure fetch-options)))
     (bytestructure-set! bs 'fetch-options
-                        (bytestructure-bytevector fetch-options-bs))))
+                        (bytestructure-bytevector fetch-options-bs))
+
+    ;; FETCH-OPTIONS might contain things like pointers coming from
+    ;; 'procedure->pointer' (callbacks), which should be protected from GC as
+    ;; long as SUBMODULE-UPDATE-OPTIONS is live.
+    (hashq-set! %weak-references submodule-update-options fetch-options)))
 
 
 ;; git remote head
