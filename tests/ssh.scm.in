@@ -36,7 +36,8 @@
 (define (sshd-available?)
   ;; Return #t if sshd is available (it does not support
   ;; ‘--version’ or anything similar though).
-  (= 256 (system* sshd "--something-not-supported")))
+  (= 256 (parameterize ((current-error-port (%make-void-port "w")))
+           (system* sshd "--something-not-supported"))))
 
 (define (start-sshd port)
   (define (write-authorized-keys file)
