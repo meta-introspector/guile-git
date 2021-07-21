@@ -10,6 +10,16 @@ Copyright © 2021 Ludovic Courtès
   notice and this notice are preserved.  This file is offered as-is,
   without any warranty.
 
+* Changes in 0.5.2 (since 0.5.1)
+
+** Bug fix
+
+*** Fix crash when fetching multiple sub-modules
+
+This bug was reported at <https://issues.guix.gnu.org/48855>.  It could
+lead to crashes via SIGSEGV or SIGILL while fetching multiple
+sub-modules in a row.
+
 * Changes in 0.5.1 (since 0.5.0)
 
 ** Bug fix
