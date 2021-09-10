@@ -1,5 +1,5 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
-;;; Copyright © 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2021 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -81,6 +81,10 @@
             GITERR_REBASE
             GITERR_FILESYSTEM
             GITERR_PATCH
+            GITERR_WORKTREE
+            GITERR_SHA1
+            GITERR_HTTP
+            GITERR_INTERNAL
 
             clear-git-error!)
   #:re-export (raise-git-error))
@@ -154,6 +158,10 @@
 (define GITERR_REBASE 29)
 (define GITERR_FILESYSTEM 30)
 (define GITERR_PATCH 31)
+(define GITERR_WORKTREE 32)
+(define GITERR_SHA1 33)
+(define GITERR_HTTP 34)
+(define GITERR_INTERNAL 35)
 
 
 (define clear-git-error!
