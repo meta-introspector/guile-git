@@ -31,6 +31,7 @@
             remote-lookup
             remote-fetch
             remote-create-anonymous
+            remote-create-detached
             remote-connected?
             remote-connect
             remote-disconnect
@@ -79,6 +80,14 @@
               (string->pointer url))
         (pointer->remote! (dereference-pointer out))))))
 
+(define remote-create-detached
+  (let ((proc (libgit2->procedure* "git_remote_create_detached" '(* *))))
+    (lambda* (url)
+      "Return an in-memory remote for URL without a connected local repository."
+      (let ((out (make-double-pointer)))
+        (proc out
+              (string->pointer url))
+        (pointer->remote! (dereference-pointer out))))))
 
 (define remote-connected?
   (let ((proc (libgit2->procedure int "git_remote_connected" '(*))))
