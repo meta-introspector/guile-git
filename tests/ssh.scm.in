@@ -61,6 +61,13 @@ AuthorizedKeysFile ~a
 PidFile ~a
 PermitUserEnvironment yes
 
+# libssh2 and therefore libgit2 do not yet support
+# sha2-based rsa algorithms.
+# See upstream issue:
+#   https://github.com/libssh2/libssh2/issues/536
+HostkeyAlgorithms +ssh-rsa
+PubkeyAcceptedAlgorithms +ssh-rsa
+
 # Disable permission checks on auth files for the sake
 # of isolated build environments.
 StrictModes no~%"
