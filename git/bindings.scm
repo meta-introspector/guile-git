@@ -150,9 +150,6 @@
 (define-public libgit2-init!
   (libgit2->procedure int "git_libgit2_init" '()))
 
-(define libgit2-opts
-  (libgit2->procedure int "git_libgit2_init" `(,int)))
-
 (define-public libgit2-shutdown!
   (libgit2->procedure int "git_libgit2_shutdown" '()))
 
