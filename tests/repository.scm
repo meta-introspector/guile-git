@@ -51,6 +51,12 @@
 
 (with-repository "simple" directory
 
+  (test-equal "repository-index"
+    #t
+    (let* ((repository (repository-open directory))
+           (out ((@ (git types) index?) (repository-index repository))))
+      out))
+
   (test-equal "repository-empty?"
     #f
     (let* ((repository (repository-open directory))
