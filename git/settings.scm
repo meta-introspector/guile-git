@@ -20,7 +20,8 @@
 (define-module (git settings)
   #:use-module (system foreign)
   #:use-module (git bindings)
-  #:export (set-tls-certificate-locations!
+  #:export (set-owner-validation!
+            set-tls-certificate-locations!
             set-user-agent!))
 
 ;; 'git_libgit2_opt_t' enum defined in <git2/common.h>.
@@ -61,6 +62,14 @@
 (define GIT_OPT_SET_EXTENSIONS 34)
 (define GIT_OPT_GET_OWNER_VALIDATION 35)
 (define GIT_OPT_SET_OWNER_VALIDATION 36)
+
+(define set-owner-validation!
+  (let ((proc (libgit2->procedure* "git_libgit2_opts" (list int int))))
+    (lambda (owner-validation?)
+      "Enable/disable owner validation checks.  When enabled, raise an error
+when a repository directory is not owned by the current user.  See
+CVE-2022-24765."
+      (proc GIT_OPT_SET_OWNER_VALIDATION (if owner-validation? 1 0)))))
 
 (define set-tls-certificate-locations!
   (let ((proc (libgit2->procedure* "git_libgit2_opts" (list int '* '*))))
