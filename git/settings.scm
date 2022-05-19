@@ -1,5 +1,6 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2017 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2022 André Batista <nandre@riseup.net>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -38,8 +39,28 @@
 (define GIT_OPT_SET_SSL_CERT_LOCATIONS 12)
 (define GIT_OPT_SET_USER_AGENT 13)
 (define GIT_OPT_ENABLE_STRICT_OBJECT_CREATION 14)
-(define GIT_OPT_SET_SSL_CIPHERS 15)
-(define GIT_OPT_GET_USER_AGENT 16)
+(define GIT_OPT_ENABLE_STRICT_SYMBOLIC_REF_CREATION 15)
+(define GIT_OPT_SET_SSL_CIPHERS 16)
+(define GIT_OPT_GET_USER_AGENT 17)
+(define GIT_OPT_ENABLE_OFS_DELTA 18)
+(define GIT_OPT_ENABLE_FSYNC_GITDIR 19)
+(define GIT_OPT_GET_WINDOWS_SHAREMODE 20)
+(define GIT_OPT_SET_WINDOWS_SHAREMODE 21)
+(define GIT_OPT_ENABLE_STRICT_HASH_VERIFICATION 22)
+(define GIT_OPT_SET_ALLOCATOR 23)
+(define GIT_OPT_ENABLE_UNSAVED_INDEX_SAFETY 24)
+(define GIT_OPT_GET_PACK_MAX_OBJECTS 25)
+(define GIT_OPT_SET_PACK_MAX_OBJECTS 26)
+(define GIT_OPT_DISABLE_PACK_KEEP_FILE_CHECKS 27)
+(define GIT_OPT_ENABLE_HTTP_EXPECT_CONTINUE 28)
+(define GIT_OPT_GET_MWINDOW_FILE_LIMIT 29)
+(define GIT_OPT_SET_MWINDOW_FILE_LIMIT 30)
+(define GIT_OPT_SET_ODB_PACKED_PRIORITY 31)
+(define GIT_OPT_SET_ODB_LOOSE_PRIORITY 32)
+(define GIT_OPT_GET_EXTENSIONS 33)
+(define GIT_OPT_SET_EXTENSIONS 34)
+(define GIT_OPT_GET_OWNER_VALIDATION 35)
+(define GIT_OPT_SET_OWNER_VALIDATION 36)
 
 (define set-tls-certificate-locations!
   (let ((proc (libgit2->procedure* "git_libgit2_opts" (list int '* '*))))
