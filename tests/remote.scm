@@ -2,6 +2,7 @@
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2017 Erik Edrosa <erik.edrosa@gmail.com>
 ;;; Copyright © 2017, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -58,7 +59,26 @@
     "https://example.org"
     (let ((repository (repository-open directory)))
       (remote-set-url! repository "origin" "https://example.org")
-      (remote-url (remote-lookup repository "origin")))))
+      (remote-url (remote-lookup repository "origin"))))
+
+  (test-equal "remote-ls (detached)"
+    '((0 "3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b"
+	 "0000000000000000000000000000000000000000"
+	 "HEAD")
+      (0 "3f848a1a52416ac99a5c5bf2e6bd55eb7b99d55b"
+	 "0000000000000000000000000000000000000000"
+	 "refs/heads/master"))
+    (let ((remote (remote-create-detached directory)))
+      (remote-connect/detached remote)
+      ;; Order is unimportant(?), so sort the results.
+      (sort (map (lambda (remote-head)
+		   (list (remote-head-local remote-head)
+			 (oid->string (remote-head-oid remote-head))
+			 (oid->string (remote-head-loid remote-head))
+			 (remote-head-name remote-head)))
+		 (remote-ls remote))
+	    (lambda (x y)
+	      (string<? (list-ref x 3) (list-ref y 3)))))))
 
 (libgit2-shutdown!)
 

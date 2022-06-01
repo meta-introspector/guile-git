@@ -2,6 +2,7 @@
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -34,6 +35,7 @@
             remote-create-detached
             remote-connected?
             remote-connect
+	    remote-connect/detached
             remote-disconnect
             remote-ls))
 
@@ -99,6 +101,8 @@
 (define GIT_DIRECTION_FETCH 0)
 
 (define remote-connect
+  ;; TODO: calling this on detached remotes causes segfaults,
+  ;; hence the remote-connect/detached work-around
   (let ((proc (libgit2->procedure* "git_remote_connect" `(* ,int * * * )))) ;; XXX: actual types
     (lambda* (remote)
       (let ((remote-callbacks (make-remote-callbacks)))
@@ -108,6 +112,16 @@
               (remote-callbacks->pointer remote-callbacks)
               %null-pointer
               %null-pointer)))))
+
+(define remote-connect/detached
+  (let ((proc (libgit2->procedure* "git_remote_connect" `(* ,int * * * )))) ;; XXX: actual types
+    (lambda* (remote)
+      "Connect the detached remote."
+      (proc (remote->pointer remote)
+            GIT_DIRECTION_FETCH
+            %null-pointer
+            %null-pointer
+            %null-pointer))))
 
 (define remote-disconnect
   (let ((proc (libgit2->procedure void "git_remote_disconnect" '(*))))
