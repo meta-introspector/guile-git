@@ -5,6 +5,7 @@
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2019 Marius Bakke <marius@devup.no>
+;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -191,12 +192,12 @@
   oid?
   (bytevector oid-bytevector))
 
-(define (pointer->oid pointer)
+(define* (pointer->oid pointer #:optional (offset 0))
   ;; C functions typically return 'const git_oid *' and the OID's memory
   ;; belongs to the object it is associated with.  Thus, always copy the OID
   ;; contents to make sure it's not modified or freed behind our back.
   (%make-oid (bytevector-copy
-              (pointer->bytevector pointer GIT-OID-RAWSZ))))
+              (pointer->bytevector pointer GIT-OID-RAWSZ offset))))
 
 (define (oid->pointer oid)
   (bytevector->pointer (oid-bytevector oid)))
@@ -903,8 +904,10 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
       (let ((bs (pointer->bytestructure pointer %remote-head)))
         (%make-remote-head
          (bytestructure-ref bs 'local)
-         (%make-oid (bytestructure-bytevector (bytestructure-ref bs 'oid)))
-         (%make-oid (bytestructure-bytevector (bytestructure-ref bs 'loid)))
+	 (pointer->oid pointer (bytestructure-offset
+				(bytestructure-ref bs 'oid)))
+	 (pointer->oid pointer (bytestructure-offset
+				(bytestructure-ref bs 'loid)))
          (pointer->string (make-pointer (bytestructure-ref bs 'name)))
          (bytestructure-ref bs 'symref-target)))))
 
