@@ -3,6 +3,7 @@
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2019 Marius Bakke <marius@devup.no>
+;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -119,5 +120,5 @@
 (define (pointer->size_t ptr)
   (bytevector-uint-ref (pointer->bytevector ptr (sizeof size_t))
                        0
-                       (endianness little)
+                       (native-endianness)
                        (sizeof size_t)))
