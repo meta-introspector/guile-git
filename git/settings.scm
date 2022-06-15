@@ -1,6 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2017 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2022 André Batista <nandre@riseup.net>
+;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -20,7 +21,9 @@
 (define-module (git settings)
   #:use-module (system foreign)
   #:use-module (git bindings)
-  #:export (set-owner-validation!
+  #:use-module (git types)
+  #:export (owner-validation?
+            set-owner-validation!
             set-tls-certificate-locations!
             set-user-agent!))
 
@@ -62,6 +65,14 @@
 (define GIT_OPT_SET_EXTENSIONS 34)
 (define GIT_OPT_GET_OWNER_VALIDATION 35)
 (define GIT_OPT_SET_OWNER_VALIDATION 36)
+
+(define owner-validation?
+  (let ((proc (libgit2->procedure* "git_libgit2_opts" (list int '*))))
+    (lambda ()
+      "Return true if owner validation is enabled."
+      (let ((out (make-int-pointer)))
+        (proc GIT_OPT_GET_OWNER_VALIDATION out)
+        (if (equal? (pointer->int out) 0) #f #t)))))
 
 (define set-owner-validation!
   (let ((proc (libgit2->procedure* "git_libgit2_opts" (list int int))))

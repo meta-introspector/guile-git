@@ -46,7 +46,9 @@
             tree? pointer->tree tree->pointer
             tree-entry? pointer->tree-entry tree-entry->pointer
             submodule? pointer->submodule submodule->pointer
+            pointer->int
             pointer->size_t
+            make-int-pointer
             make-size_t-pointer
             make-double-pointer))
 
@@ -102,8 +104,17 @@
 (define (make-double-pointer)
   (bytevector->pointer (make-bytevector (sizeof '*))))
 
+(define (make-int-pointer)
+  (bytevector->pointer (make-bytevector (sizeof int))))
+
 (define (make-size_t-pointer)
   (bytevector->pointer (make-bytevector (sizeof size_t))))
+
+(define (pointer->int ptr)
+  (bytevector-sint-ref (pointer->bytevector ptr (sizeof int))
+                       0
+                       (native-endianness)
+                       (sizeof int)))
 
 (define (pointer->size_t ptr)
   (bytevector-uint-ref (pointer->bytevector ptr (sizeof size_t))

@@ -95,6 +95,7 @@ TESTS =                                         \
   tests/remote.scm                              \
   tests/rev-parse.scm                           \
   tests/status.scm                              \
+  tests/settings.scm                            \
   tests/submodule.scm                           \
   tests/tag.scm                                 \
   tests/tree.scm
