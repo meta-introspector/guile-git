@@ -6,6 +6,7 @@
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2019 Marius Bakke <marius@devup.no>
 ;;; Copyright © 2022 Maxime Devos <maximedevos@telenet.be>
+;;; Copyright © 2023 Nicolas Graves <ngraves@ngraves.fr>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -87,6 +88,7 @@
             set-proxy-options-url! set-proxy-options-type!
 
 
+            make-checkout-options-bytestructure checkout-options-bytestructure checkout-options->pointer
             make-clone-options-bytestructure clone-options-bytestructure clone-options->pointer set-clone-options-fetch-opts!
             submodule-update-options-bytestructure
             make-submodule-update-options-bytestructure
@@ -787,7 +789,7 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
     (%make-proxy-options (bytestructure-ref bs 'proxy-opts))))
 
 
-;; git clone options
+;; git checkout options
 
 (define %checkout-options
   (bs:struct `((version ,unsigned-int)
@@ -810,6 +812,21 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
                (their-label ,(bs:pointer uint8))
                (perfdata-cb ,(bs:pointer uint8))
                (perfdata-payload ,(bs:pointer uint8)))))
+
+(define-record-type <checkout-options>
+  (%make-checkout-options bytestructure)
+  checkout-options?
+  (bytestructure checkout-options-bytestructure))
+
+(define (make-checkout-options-bytestructure)
+  (%make-checkout-options (bytestructure %checkout-options)))
+
+(define (checkout-options->pointer checkout-options)
+  (bytestructure->pointer (checkout-options-bytestructure checkout-options)))
+
+
+
+;; git clone options
 
 (define %clone-options
   (bs:struct `((version ,int)
