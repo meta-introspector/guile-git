@@ -124,6 +124,12 @@ EXTRA_DIST +=                       \
   $(TESTS)                          \
   $(TESTS_UTILS)
 
+# Perform sanitycheck on bytestructure descriptors from git/structs.scm,
+# ensuring that the descriptor size matches the size of the libgit2 type.
+sanitycheck:
+	$(top_builddir)/pre-inst-env $(GUILE) \
+		--no-auto-compile -e main sanitycheck.scm
+
 check-local:
         # 'tests/ssh.scm' needs a writable '.ssh' directory where it
         # can create config files.  Create it.
