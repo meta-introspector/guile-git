@@ -139,7 +139,7 @@
   (let ((proc (libgit2->procedure* "git_repository_index" '(* *))))
     (lambda (repository)
       (let ((out (make-double-pointer)))
-        (proc (repository->pointer repository))
+        (proc out (repository->pointer repository))
         (pointer->index (dereference-pointer out))))))
 
 (define repository-init
