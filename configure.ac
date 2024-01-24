@@ -1,6 +1,6 @@
 dnl Guile-Git --- GNU Guile bindings of libgit2
 dnl Copyright © 2016-2018 Erik Edrosa <erik.edrosa@gmail.com>
-dnl Copyright © 2017, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+dnl Copyright © 2017, 2019-2021, 2024 Ludovic Courtès <ludo@gnu.org>
 dnl Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
 dnl
 dnl This file is part of Guile-Git.
@@ -42,6 +42,8 @@ AS_IF([test "x$LIBGIT2_LIBDIR" = "x"], [
   AC_MSG_FAILURE([Unable to identify libgit2 lib path.])
 ])
 AC_SUBST([LIBGIT2_LIBDIR])
+
+AC_PROG_CC
 
 dnl Does the 'git_remote_callbacks' struct have a 'resolve_url' field?
 dnl It's missing in libgit2 0.28.5, added in 1.0.

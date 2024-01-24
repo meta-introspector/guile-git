@@ -127,7 +127,8 @@ EXTRA_DIST +=                       \
 # Perform sanitycheck on bytestructure descriptors from git/structs.scm,
 # ensuring that the descriptor size matches the size of the libgit2 type.
 sanitycheck:
-	$(top_builddir)/pre-inst-env $(GUILE) \
+	CC="$(CC)"						\
+	$(top_builddir)/pre-inst-env $(GUILE)			\
 		--no-auto-compile -e main sanitycheck.scm
 
 check-local:
