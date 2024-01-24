@@ -114,22 +114,26 @@ AM_SCM_LOG_FLAGS = --no-auto-compile -L "$(top_srcdir)"
 
 include $(top_srcdir)/doc/local.mk
 
-EXTRA_DIST +=                       \
-  README.md                         \
-  pre-inst-env.in                   \
-  build-aux/test-driver.scm		  		\
-  static/bg.png                     \
-  static/main.css                   \
-  static/README                     \
-  $(TESTS)                          \
+EXTRA_DIST +=					\
+  README.md					\
+  pre-inst-env.in				\
+  build-aux/test-driver.scm			\
+  build-aux/check-libgit2-abi.scm		\
+  static/bg.png					\
+  static/main.css				\
+  static/README					\
+  $(TESTS)					\
   $(TESTS_UTILS)
 
 # Perform sanitycheck on bytestructure descriptors from git/structs.scm,
 # ensuring that the descriptor size matches the size of the libgit2 type.
-sanitycheck:
-	CC="$(CC)"						\
-	$(top_builddir)/pre-inst-env $(GUILE)			\
-		--no-auto-compile -e main sanitycheck.scm
+check-abi:
+	CC="$(CC)"				\
+	$(top_builddir)/pre-inst-env $(GUILE)	\
+		--no-auto-compile -e main	\
+	        build-aux/check-libgit2-abi.scm
+
+.PHONY: check-abi
 
 check-local:
         # 'tests/ssh.scm' needs a writable '.ssh' directory where it
