@@ -135,7 +135,7 @@ check-abi:
 
 .PHONY: check-abi
 
-check-local:
+check-local: check-abi
         # 'tests/ssh.scm' needs a writable '.ssh' directory where it
         # can create config files.  Create it.
 	@if [ "$(abs_top_builddir)" != "$(abs_top_srcdir)" ]; then              \
