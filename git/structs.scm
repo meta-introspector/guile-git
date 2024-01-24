@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2017, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2019-2021, 2024 Ludovic Courtès <ludo@gnu.org>
 ;;; Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 ;;; Copyright © 2018 Jelle Licht <jlicht@fsfe.org>
 ;;; Copyright © 2019 Marius Bakke <marius@devup.no>
@@ -225,7 +225,11 @@
   (bs:struct `((version ,unsigned-int)
                (status-show ,int)
                (flags ,unsigned-int)
-               (pathspec ,%strarray))))
+               (pathspec ,%strarray)
+               (baseline ,(bs:pointer void))
+               ,@(if %have-status-options-rename-threshold?
+                     `((rename-threshold ,uint16))
+                     '()))))
 
 (define %diff-file
   (bs:struct `((oid ,(bs:vector 20 uint8))
@@ -486,7 +490,7 @@
 
 (define %config-entry (bs:struct `((name ,(bs:pointer uint8)) ; char *
                                    (value ,(bs:pointer uint8)) ; char *
-                                   (include-depth ,uint64)
+                                   (include-depth ,unsigned-int)
                                    (level ,int) ; git_config_level_t
                                    (free ,(bs:pointer int))
                                    (payload ,(bs:pointer int)))))
@@ -637,6 +641,7 @@ type to 'specified for this to take effect."
                (push-update-reference ,(bs:pointer uint8))
                (push-negotiation ,(bs:pointer uint8))
                (transport ,(bs:pointer uint8))
+               (remote-ready ,(bs:pointer void))
                (payload ,(bs:pointer uint8))
 
                ;; libgit2 1.0 added this field, which is missing from 0.28.5,
@@ -670,6 +675,9 @@ type to 'specified for this to take effect."
                (update-fetchhead ,int)
                (download-tags ,int)
                (proxy-opts ,%proxy-options)
+               ,@(if %have-fetch-options-follow-redirects?
+                     `((follow-redirects ,int))
+                     '())
                (custom-headers ,%strarray))))
 
 (define-record-type <fetch-options>

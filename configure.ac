@@ -56,6 +56,28 @@ else
 fi
 AC_SUBST([HAVE_REMOTE_CALLBACKS_RESOLVE_URL])
 
+dnl Does 'git_status_options' have 'rename_threshold'?
+dnl It's missing in libgit2 1.3, available in 1.5.
+AC_CHECK_MEMBER([git_status_options.rename_threshold], [], [],
+  [[#include <git2.h>]])
+if test "x$ac_cv_member_git_status_options_rename_threshold" = "xyes"; then
+  HAVE_STATUS_OPTIONS_RENAME_THRESHOLD="#true"
+else
+  HAVE_STATUS_OPTIONS_RENAME_THRESHOLD="#false"
+fi
+AC_SUBST([HAVE_STATUS_OPTIONS_RENAME_THRESHOLD])
+
+dnl Does 'git_fetch_options' have 'follow_redirects'?
+dnl It's missing in libgit2 1.3, available in 1.5.
+AC_CHECK_MEMBER([git_fetch_options.follow_redirects], [], [],
+  [[#include <git2.h>]])
+if test "x$ac_cv_member_git_fetch_options_follow_redirects" = "xyes"; then
+  HAVE_FETCH_OPTIONS_FOLLOW_REDIRECTS="#true"
+else
+  HAVE_FETCH_OPTIONS_FOLLOW_REDIRECTS="#false"
+fi
+AC_SUBST([HAVE_FETCH_OPTIONS_FOLLOW_REDIRECTS])
+
 dnl Those binaries are required for ssh authentication tests.
 AC_PATH_PROG([SSHD], [sshd])
 AC_PATH_PROG([SSH_AGENT], [ssh-agent])
