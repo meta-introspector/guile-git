@@ -2,7 +2,7 @@ image: debian:testing
 
 before_script:
   - apt -y update
-  - apt -y install autoconf pkg-config make texinfo libgit2-dev guile-2.2-dev guile-bytestructures
+  - apt -y install autoconf pkg-config make texinfo libgit2-dev guile-3.0-dev guile-bytestructures
   - ./bootstrap
   - ./configure
 
