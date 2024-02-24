@@ -1,7 +1,7 @@
 # Guile-Git --- GNU Guile bindings of libgit2
 # Copyright © 2016-2018 Erik Edrosa <erik.edrosa@gmail.com>
 # Copyright © 2016, 2017 Amirouche Boubekki <amirouche@hypermove.net>
-# Copyright © 2017, 2018, 2019, 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+# Copyright © 2017-2021, 2024 Ludovic Courtès <ludo@gnu.org>
 # Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
 #
 # This file is part of Guile-Git.
@@ -128,10 +128,10 @@ EXTRA_DIST +=					\
 # Perform sanitycheck on bytestructure descriptors from git/structs.scm,
 # ensuring that the descriptor size matches the size of the libgit2 type.
 check-abi:
-	CC="$(CC)"				\
-	$(top_builddir)/pre-inst-env $(GUILE)	\
-		--no-auto-compile -e main	\
-	        build-aux/check-libgit2-abi.scm
+	CC="$(CC)"						\
+	$(top_builddir)/pre-inst-env $(GUILE)			\
+		--no-auto-compile -e main			\
+	        $(top_srcdir)/build-aux/check-libgit2-abi.scm
 
 .PHONY: check-abi
 
