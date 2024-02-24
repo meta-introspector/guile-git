@@ -1,7 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2017 Erik Edrosa <erik.edrosa@gmail.com>
-;;; Copyright © 2017, 2020 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2017, 2020, 2024 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -107,7 +107,7 @@ extracted."
                                   (number->string (getpid)))))
     (with-directory directory
       (let ((path (string-append %src-dir "/tests/data/" name ".tgz")))
-        (system* "tar" "xvf" path "-C" directory))
+        (system* "tar" "xvof" path "-C" directory))
       (let ((directory (string-append directory "/" name)))
         body ...))))
 
