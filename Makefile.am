@@ -119,6 +119,8 @@ EXTRA_DIST +=					\
   pre-inst-env.in				\
   build-aux/test-driver.scm			\
   build-aux/check-libgit2-abi.scm		\
+  guix.scm					\
+  .guix/modules/guile-git-package.scm		\
   static/bg.png					\
   static/main.css				\
   static/README					\
