@@ -5,6 +5,7 @@ Guile-Git is a GNU Guile library providing bindings to
 
 Copyright © 2016, 2017 Amirouche Boubekki  
 Copyright © 2018, 2019 Erik Edrosa  
+Copyright © 2024 Ludovic Courtès
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
 notice and this notice are preserved.  This file is offered as-is,
@@ -60,10 +61,10 @@ The easiest way to start hacking on guile-git is to install
 [GNU Guix](https://gnu.org/s/guix) and run the following command:
 
 ```bash
-> guix environment -l guix.scm
+> guix shell -CP
 ```
 
-To build from git you do:
+From there you can build interactively with the following commands:
 
 ```sh
 autoreconf -vfi
@@ -71,17 +72,30 @@ autoreconf -vfi
 make
 ```
 
-To run the unit tests you do:
+To run the unit tests:
 
 ```sh
 make check
 ```
 
+You can also use Guix to build Guile-Git non-interactively, like so:
+
+```sh
+guix build -f guix.scm
+```
+
+Last, you can build a variant against a specific libgit2 version, as in
+this example:
+
+```sh
+guix build -L .guix/modules guile-git-with-libgit2-1.4
+```
+
 You can then:
 
-- Create a pull request on gitlab
+- Create a pull request on https://gitlab.com/guile-git/guile-git/
 - Send a patch to one of the maintainers
-- Come and ping `OrangeShark` about it at `#guile@irc.freenode.net`.
+- Come and ping people on `#guile` on the Libera Chat IRC network
 
 And don't forget to add a unit test!
 
