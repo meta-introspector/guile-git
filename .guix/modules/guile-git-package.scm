@@ -45,21 +45,19 @@
                         #:select? (git-predicate %srcdir)))
     (build-system gnu-build-system)
     (native-inputs
-     `(("autoconf" ,autoconf)
-       ("automake" ,automake)
-       ("pkg-config" ,pkg-config)
-       ("texinfo" ,texinfo)
-       ("openssh" ,openssh)
-       ("git" ,git)))
+     (list autoconf
+           automake
+           pkg-config
+           texinfo
+           openssh
+           git))
     (inputs
-     `(("guile" ,guile-3.0)
-       ("libgit2" ,libgit2)
-       ("openssl" ,openssl)
-       ("zlib" ,zlib)
-       ("guile-bytestructures" ,guile-bytestructures)))
+     (list guile-3.0 libgit2 openssl zlib guile-bytestructures))
     (synopsis "Guile bindings for libgit2")
-    (description "")
-    (home-page "")
+    (description
+     "This package provides Guile bindings to libgit2, a library to
+manipulate repositories of the Git version control system.")
+    (home-page "https://gitlab.com/guile-git/guile-git.git")
     (license gpl3+)))
 
 guile-git
