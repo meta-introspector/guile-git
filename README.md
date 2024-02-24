@@ -66,7 +66,7 @@ The easiest way to start hacking on guile-git is to install
 To build from git you do:
 
 ```sh
-./bootstrap
+autoreconf -vfi
 ./configure
 make
 ```
