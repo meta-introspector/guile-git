@@ -60,4 +60,22 @@ manipulate repositories of the Git version control system.")
     (home-page "https://gitlab.com/guile-git/guile-git.git")
     (license gpl3+)))
 
+(define-public guile-git/libgit2-1.4
+  (package/inherit guile-git
+    (name "guile-git-with-libgit-1.4")
+    (inputs (modify-inputs (package-inputs guile-git)
+              (replace "libgit2" libgit2-1.4)))))
+
+(define-public guile-git/libgit2-1.6
+  (package/inherit guile-git
+    (name "guile-git-with-libgit-1.6")
+    (inputs (modify-inputs (package-inputs guile-git)
+              (replace "libgit2" libgit2-1.6)))))
+
+(define-public guile-git/libgit2-1.7
+  (package/inherit guile-git
+    (name "guile-git-with-libgit-1.7")
+    (inputs (modify-inputs (package-inputs guile-git)
+              (replace "libgit2" libgit2-1.7)))))
+
 guile-git
