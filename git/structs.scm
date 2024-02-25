@@ -646,12 +646,7 @@ type to 'specified for this to take effect."
                (transport ,(bs:pointer uint8))
                (remote-ready ,(bs:pointer void))
                (payload ,(bs:pointer uint8))
-
-               ;; libgit2 1.0 added this field, which is missing from 0.28.5,
-               ;; even though in both cases GIT_REMOTE_CALLBACKS_VERSION = 1.
-               ,@(if %have-remote-callbacks-resolve-url?
-                     `((resolve-url ,(bs:pointer uint8)))
-                     '()))))
+               (resolve-url ,(bs:pointer uint8)))))
 
 (define-record-type <remote-callbacks>
   (%make-remote-callbacks bytestructure)

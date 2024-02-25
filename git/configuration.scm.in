@@ -19,16 +19,11 @@
 
 (define-module (git configuration)
   #:export (%libgit2
-            %have-remote-callbacks-resolve-url?
             %have-status-options-rename-threshold?
             %have-fetch-options-follow-redirects?))
 
 (define %libgit2
   "@LIBGIT2_LIBDIR@/libgit2")
-
-(define %have-remote-callbacks-resolve-url?
-  ;; True if the 'git_remote_callbacks' struct has a 'resolve_url' field.
-  @HAVE_REMOTE_CALLBACKS_RESOLVE_URL@)
 
 (define %have-status-options-rename-threshold?
   ;; True if 'git_status_options' has a 'rename_threshold' field.

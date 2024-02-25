@@ -35,7 +35,7 @@ GUILE_MODULE_REQUIRED([srfi srfi-64])
 
 GUILE_MODULE_REQUIRED([bytestructures guile])
 
-PKG_CHECK_MODULES([LIBGIT2], [libgit2 >= 0.28.0])
+PKG_CHECK_MODULES([LIBGIT2], [libgit2 >= 1.3.0])
 PKG_CHECK_VAR([LIBGIT2_LIBDIR], [libgit2], [libdir])
 AC_MSG_CHECKING([libgit2 library path])
 AS_IF([test "x$LIBGIT2_LIBDIR" = "x"], [
@@ -44,17 +44,6 @@ AS_IF([test "x$LIBGIT2_LIBDIR" = "x"], [
 AC_SUBST([LIBGIT2_LIBDIR])
 
 AC_PROG_CC
-
-dnl Does the 'git_remote_callbacks' struct have a 'resolve_url' field?
-dnl It's missing in libgit2 0.28.5, added in 1.0.
-AC_CHECK_MEMBER([git_remote_callbacks.resolve_url], [], [],
-  [[#include <git2.h>]])
-if test "x$ac_cv_member_git_remote_callbacks_resolve_url" = "xyes"; then
-  HAVE_REMOTE_CALLBACKS_RESOLVE_URL="#true"
-else
-  HAVE_REMOTE_CALLBACKS_RESOLVE_URL="#false"
-fi
-AC_SUBST([HAVE_REMOTE_CALLBACKS_RESOLVE_URL])
 
 dnl Does 'git_status_options' have 'rename_threshold'?
 dnl It's missing in libgit2 1.3, available in 1.5.
