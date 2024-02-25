@@ -20,14 +20,17 @@
   #:use-module (system foreign)
   #:use-module (git bindings)
   #:use-module (git types)
-  #:export (ignore-path-is-ignored))
+  #:export (ignored-file?))
 
 ;;; ignore https://libgit2.github.com/libgit2/#HEAD/group/ignore
-(define ignore-path-is-ignored
+(define ignored-file?
   (let ((proc (libgit2->procedure* "git_ignore_path_is_ignored" '(* * *))))
-    (lambda (repository path)
+    (lambda (repository file)
+      "Return true if FILE would be ignored according to current ignore
+rules, regardless of whether the file is already in the index or committed to
+the repository."
       (let ((ignored (make-int-pointer)))
         (proc ignored
               (repository->pointer repository)
-              (string->pointer path))
+              (string->pointer file))
         (= (pointer->int ignored) 1)))))

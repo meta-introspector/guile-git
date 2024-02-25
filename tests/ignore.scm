@@ -34,14 +34,14 @@
   (let ((repository (repository-open directory)))
     (test-equal "ignore path is ignored, directory"
       #t
-      (ignore-path-is-ignored repository "directory"))
+      (ignored-file? repository "directory"))
     (test-equal "ignore path is ignored, directory/message"
       #t
-      (ignore-path-is-ignored repository
-                              (string-append "directory" file-name-separator-string "message")))
+      (ignored-file? repository
+                     (string-append "directory" file-name-separator-string "message")))
     (test-equal "ignore path is not ignored, README"
       #f
-      (ignore-path-is-ignored repository "README"))))
+      (ignored-file? repository "README"))))
 
 (libgit2-shutdown!)
 
