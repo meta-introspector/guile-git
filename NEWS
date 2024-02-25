@@ -3,12 +3,62 @@
 
 
 Copyright © 2018, 2019, 2020 Erik Edrosa
-Copyright © 2021 Ludovic Courtès
+Copyright © 2021, 2024 Ludovic Courtès
 
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
   notice and this notice are preserved.  This file is offered as-is,
   without any warranty.
+
+* Changes in 0.6.0 (since 0.5.2)
+
+** Updated requirements
+
+Guile-Git now requires libgit2 >= 1.3.0.
+
+** New functionality
+
+*** Support libgit2 up to 1.7.x
+
+*** Support for checkout options
+
+Checkout options can be created with ~make-checkout-options~ and passed
+to ~checkout-head~, ~checkout-index~, etc.
+
+*** New ~remote-connect/detached~ procedure
+
+Lets you connect to a detached remote.
+
+*** New ~(git ignore)~ module and ~ignored-file?~  procedure
+
+The ~ignored-file?~ returns true when a file is ignored according to the
+ignore rules.
+
+*** New ~owner-validation?~ and ~set-owner-validation!~ procedures
+
+These procedures let you query and set repository directory ownership
+validation, which raises an error when attempting to access a repository
+not owned by the current user.
+
+*** New ~describe-checkout~ procedure
+
+The procedure returns a pretty description of a checkout, similar to
+the ~git describe~ command.
+
+** Bug fixes
+
+*** Always use native endianness when interpreting ~size_t~ pointers
+   (<https://gitlab.com/guile-git/guile-git/-/issues/20>)
+
+*** Add missing argument to C call made by ~repository-index~
+
+*** Clone-over-SSH tests now ignores =~/.ssh/known_hosts= validation
+   (<https://gitlab.com/guile-git/guile-git/-/issues/29>)
+
+*** Fix various binary interface incompatibility issues
+
+Running ~make check-abi~ now flags application binary interface (ABI)
+issues.
 
 * Changes in 0.5.2 (since 0.5.1)
 
