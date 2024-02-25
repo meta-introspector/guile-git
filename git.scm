@@ -1,6 +1,7 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2016 Amirouche Boubekki <amirouche@hypermove.net>
 ;;; Copyright © 2016, 2017 Erik Edrosa <erik.edrosa@gmail.com>
+;;; Copyright © 2021 Fredrik Salomonsson <plattfot@posteo.net>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -34,6 +35,7 @@
         (git diff)
         (git errors)
         (git fetch)
+        (git ignore)
         (git object)
         (git oid)
         (git reference)

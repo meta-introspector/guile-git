@@ -3,6 +3,7 @@
 # Copyright © 2016, 2017 Amirouche Boubekki <amirouche@hypermove.net>
 # Copyright © 2017-2021, 2024 Ludovic Courtès <ludo@gnu.org>
 # Copyright © 2017 Mathieu Othacehe <m.othacehe@gmail.com>
+# Copyright © 2021 Fredrik Salomonsson <plattfot@posteo.net>
 #
 # This file is part of Guile-Git.
 #
@@ -43,6 +44,7 @@ SOURCES =                           \
   git/diff.scm                      \
   git/errors.scm                    \
   git/fetch.scm                     \
+  git/ignore.scm                    \
   git/oid.scm                       \
   git/object.scm                    \
   git/reference.scm                 \
@@ -87,6 +89,7 @@ TESTS =                                         \
   tests/config.scm                              \
   tests/describe.scm                            \
   tests/diff.scm                                \
+  tests/ignore.scm                              \
   tests/oid.scm                                 \
   tests/proxy.scm                               \
   tests/reference.scm                           \
