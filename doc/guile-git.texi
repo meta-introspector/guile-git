@@ -76,13 +76,13 @@ Guile-git is a GNU Guile library providing bindings to libgit2.
 @node Requirements
 @section Requirements
 
-Guile-git depends on the following packages:
+Guile-Git depends on the following packages:
 
 @itemize
 @item
 @url{https://www.gnu.org/software/guile/, GNU Guile} 2.x or 3.0
 @item
-@url{https://libgit2.org/, libgit2} version 0.28.x or 1.0.x
+@url{https://libgit2.org/, libgit2} version 1.3.x or later.
 @item
 @url{https://github.com/TaylanUB/scheme-bytestructures, scheme-bytestructures}
 @end itemize
