@@ -21,7 +21,8 @@
   #:export (%libgit2
             %have-status-options-rename-threshold?
             %have-fetch-options-follow-redirects?
-            %have-fetch-options-depth?))
+            %have-fetch-options-depth?
+            %have-diff-options-oid-type?))
 
 (define %libgit2
   "@LIBGIT2_LIBDIR@/libgit2")
@@ -36,3 +37,6 @@
 
 (define %have-fetch-options-depth?
   @HAVE_FETCH_OPTIONS_DEPTH@)
+
+(define %have-diff-options-oid-type?
+  @HAVE_DIFF_OPTIONS_OID_TYPE@)

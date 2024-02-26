@@ -1087,6 +1087,9 @@ attempt."
                (payload ,(bs:pointer void))
                (context-lines ,uint32)
                (interhunk-lines ,uint32)
+               ,@(if %have-diff-options-oid-type?
+                     `((oid-type ,int))           ;git_oid_t
+                     '())
                (id-abbrev ,uint16)
                (max-size ,int64) ;git_off_t
                (old-prefix ,(bs:pointer uint8)) ;char*
