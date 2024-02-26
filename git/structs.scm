@@ -68,6 +68,7 @@
             make-status-options-bytestructure status-options->pointer set-status-options-show! set-status-options-flags!
 
             make-remote-callbacks remote-callbacks->pointer set-remote-callbacks-version! set-remote-callbacks-transfer-progress!
+            set-remote-callbacks-certificate-check!
             make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-remote-callbacks
             fetch-options-download-tags set-fetch-options-download-tags!
             set-remote-callbacks-credentials!
@@ -777,6 +778,32 @@ indexer progress record.  PROC can cancel the on-going transfer by returning
     (bytestructure-set! (remote-callbacks-bytestructure callbacks)
                         'transfer-progress
                         (pointer-address ptr))))
+
+(define (set-remote-callbacks-certificate-check! callbacks proc)
+  "Use PROC as the certificate check procedure in CALLBACKS.  PROC will be
+called with two arguments: the host name and a boolean indicating whether
+libgit2 thinks the certificate is valid; it must return true to indicate that
+the program should proceed with the connection, #f to abort the connection
+attempt."
+  ;; https://libgit2.org/libgit2/#HEAD/group/callback/git_transport_certificate_check_cb
+  (let ((ptr (procedure->pointer ffi:int
+                                 (lambda (certificate valid host payload)
+                                   ;; Note: In theory the callback can also
+                                   ;; return a strictly positive number "to
+                                   ;; indicate that the callback refused to
+                                   ;; act and that the existing validity
+                                   ;; determination should be honored".  That
+                                   ;; extra value doesn't bring much compared
+                                   ;; to return VALID as is, so we ignore it.
+                                   (if (proc (pointer->string host)
+                                             (= 0 valid))
+                                       0
+                                       -1))
+                                 `(* ,ffi:int * *))))
+    (hashq-set! %weak-references callbacks ptr)
+    (bytestructure-set! (remote-callbacks-bytestructure callbacks)
+                        'certificate-check (pointer-address ptr))))
+
 
 (define (fetch-options-proxy-options fetch-options)
   "Return the <proxy-options> record associated with FETCH-OPTIONS."
