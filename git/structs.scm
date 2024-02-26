@@ -675,6 +675,9 @@ type to 'specified for this to take effect."
                (update-fetchhead ,int)
                (download-tags ,int)
                (proxy-opts ,%proxy-options)
+               ,@(if %have-fetch-options-depth?
+                     `((depth ,int))
+                     '())
                ,@(if %have-fetch-options-follow-redirects?
                      `((follow-redirects ,int))
                      '())

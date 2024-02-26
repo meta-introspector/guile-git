@@ -67,6 +67,16 @@ else
 fi
 AC_SUBST([HAVE_FETCH_OPTIONS_FOLLOW_REDIRECTS])
 
+dnl Does 'git_fetch_options' have 'depth'? It's new in 1.7.
+AC_CHECK_MEMBER([git_fetch_options.depth], [], [],
+  [[#include <git2.h>]])
+if test "x$ac_cv_member_git_fetch_options_depth" = "xyes"; then
+  HAVE_FETCH_OPTIONS_DEPTH="#true"
+else
+  HAVE_FETCH_OPTIONS_DEPTH="#false"
+fi
+AC_SUBST([HAVE_FETCH_OPTIONS_DEPTH])
+
 dnl Those binaries are required for ssh authentication tests.
 AC_PATH_PROG([SSHD], [sshd])
 AC_PATH_PROG([SSH_AGENT], [ssh-agent])
