@@ -39,7 +39,7 @@
 (define-public guile-git
   (package
     (name "guile-git")
-    (version "0.1")
+    (version "42")         ;take precedence over the version provided by Guix
     (source (local-file %srcdir "guile-git-checkout"
                         #:recursive? #t
                         #:select? (git-predicate %srcdir)))
