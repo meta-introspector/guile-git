@@ -1,6 +1,6 @@
 ;;; Guile-Git --- GNU Guile bindings of libgit2
 ;;; Copyright © 2019 Mathieu Othacehe <m.othacehe@gmail.com>
-;;; Copyright © 2020, 2021 Ludovic Courtès <ludo@gnu.org>
+;;; Copyright © 2020-2021, 2024 Ludovic Courtès <ludo@gnu.org>
 ;;;
 ;;; This file is part of Guile-Git.
 ;;;
@@ -34,13 +34,19 @@
 
 (define ssh-server-port 8899)
 
+(define (ssh-fetch-options auth-method)
+  (let* ((options (make-fetch-options auth-method))
+         (callbacks (fetch-options-remote-callbacks options)))
+    ;; Proceed even if the server's certificate is not in ~/.ssh/known_hosts.
+    (set-remote-callbacks-certificate-check! callbacks (const #t))
+    options))
+
 (define (clone-test directory auth-method)
   (let* ((repo-dir (in-vicinity (getcwd) directory))
          (clone-dir (in-vicinity repo-dir "out")))
     (clone (make-ssh-url repo-dir ssh-server-port)
            clone-dir
-           (make-clone-options #:fetch-options
-                               (make-fetch-options auth-method)))
+           (make-clone-options #:fetch-options (ssh-fetch-options auth-method)))
     (let* ((repository (repository-open clone-dir))
            (oid (reference-target (repository-head repository))))
       (oid->string (commit-id (commit-lookup repository oid))))))
@@ -65,8 +71,13 @@
              (do-clone (clone-test directory auth))
              (clone-dir (in-vicinity directory "out"))
              (repository (repository-open clone-dir))
-             (remote (remote-lookup repository "origin")))
-        (remote-fetch remote #:fetch-options (make-fetch-options auth))
+             (remote (remote-lookup repository "origin"))
+             (options (make-fetch-options auth))
+             (callbacks (fetch-options-remote-callbacks options)))
+        ;; Proceed even if the server's certificate is not in
+        ;; ~/.ssh/known_hosts.
+        (set-remote-callbacks-certificate-check! callbacks (const #t))
+        (remote-fetch remote #:fetch-options options)
         #t)))
 
   (test-assert "clone + transfer-progress"
@@ -79,8 +90,12 @@
                                     #t))
                (fetch-options (make-fetch-options (make-client-ssh-auth)
                                                   #:transfer-progress
-                                                  transfer-progress)))
+                                                  transfer-progress))
+               (callbacks (fetch-options-remote-callbacks fetch-options)))
 
+          ;; Proceed even if the server's certificate is not in
+          ;; ~/.ssh/known_hosts.
+          (set-remote-callbacks-certificate-check! callbacks (const #t))
           (clone (make-ssh-url (canonicalize-path repository-directory)
                                ssh-server-port)
                  checkout-directory
