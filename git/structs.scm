@@ -138,8 +138,9 @@
 
 ;;; git-time
 
-(define %time (bs:struct `((time ,int64) ;; time in seconds since epoch
-                           (offset ,int)))) ;; timezone offset, in minutes
+(define %time (bs:struct `((time ,int64)         ;time in seconds since epoch
+                           (offset ,int)         ;timezone offset, in minutes
+                           (sign ,int8))))       ;sign for "-0000" offsets
 
 (define-record-type <time>
   (%make-time bytestructure)
