@@ -19,6 +19,8 @@
 
 (define-module (tests clone)
   #:use-module (git)
+  #:use-module ((git configuration)
+                #:select (%have-fetch-options-depth?))
   #:use-module (tests helpers)
   #:use-module (tests ssh)
   #:use-module (srfi srfi-1)

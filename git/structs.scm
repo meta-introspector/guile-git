@@ -71,6 +71,7 @@
             set-remote-callbacks-certificate-check!
             make-fetch-options-bytestructure fetch-options-bytestructure fetch-options->pointer fetch-options-remote-callbacks
             fetch-options-download-tags set-fetch-options-download-tags!
+            fetch-options-depth set-fetch-options-depth!
             set-remote-callbacks-credentials!
             fetch-options-proxy-options
 
@@ -676,12 +677,15 @@ type to 'specified for this to take effect."
                (download-tags ,int)
                (proxy-opts ,%proxy-options)
                ,@(if %have-fetch-options-depth?
-                     `((depth ,int))
+                     `((depth ,int))     ;one of the GIT-FETCH-DEPTH-* values
                      '())
                ,@(if %have-fetch-options-follow-redirects?
                      `((follow-redirects ,int))
                      '())
                (custom-headers ,%strarray))))
+
+(define GIT-FETCH-DEPTH-FULL 0)
+(define GIT-FETCH-DEPTH-UNSHALLOW 2147483647)
 
 (define-record-type <fetch-options>
   (%make-fetch-options bytestructure)
@@ -728,6 +732,33 @@ tag policy in FETCH-OPTIONS."
   (bytestructure-set! (fetch-options-bytestructure fetch-options)
                       'download-tags
                       (symbol->remote-autotag-option policy)))
+
+(define (fetch-depth->symbol depth)
+  (cond ((= depth GIT-FETCH-DEPTH-UNSHALLOW) 'unshallow)
+        (else 'full)))
+
+(define (symbol->fetch-depth symbol)
+  (case symbol
+    ((unshallow) GIT-FETCH-DEPTH-UNSHALLOW)
+    ((full)      GIT-FETCH-DEPTH-FULL)
+    (else        GIT-FETCH-DEPTH-FULL)))
+
+(define (fetch-options-depth fetch-options)
+  "Return the \"depth\" parameter of FETCH-OPTIONS as a symbol: 'full or
+'unshallow.  On libgit2 < 1.7, this is always 'full."
+  (if %have-fetch-options-depth?
+      (fetch-depth->symbol
+       (bytestructure-ref (fetch-options-bytestructure fetch-options)
+                          'depth))
+      'full))
+
+(define (set-fetch-options-depth! fetch-options depth)
+  "Change FETCH-OPTIONS depth parameter to DEPTH, one of 'full (obtain the
+full repository history), and 'unshallow (fetch missing data from a shallow
+repository)."
+  (when %have-fetch-options-depth?
+    (bytestructure-set! (fetch-options-bytestructure fetch-options)
+                        'depth (symbol->fetch-depth depth))))
 
 (define fetch-options-remote-callbacks
   (let ((cache (make-weak-key-hash-table 20)))
