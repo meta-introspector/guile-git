@@ -796,7 +796,7 @@ attempt."
                                    ;; extra value doesn't bring much compared
                                    ;; to return VALID as is, so we ignore it.
                                    (if (proc (pointer->string host)
-                                             (= 0 valid))
+                                             (not (= 0 valid)))
                                        0
                                        -1))
                                  `(* ,ffi:int * *))))
