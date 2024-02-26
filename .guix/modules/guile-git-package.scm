@@ -25,12 +25,10 @@
   #:use-module (guix packages)
   #:use-module (guix build-system gnu)
   #:use-module (gnu packages autotools)
-  #:use-module (gnu packages compression)
   #:use-module (gnu packages guile)
   #:use-module (gnu packages pkg-config)
   #:use-module (gnu packages ssh)
   #:use-module (gnu packages texinfo)
-  #:use-module (gnu packages tls)
   #:use-module (gnu packages version-control))
 
 (define %srcdir
@@ -49,10 +47,14 @@
            automake
            pkg-config
            texinfo
+           guile-3.0                              ;for 'guild compile'
+           guile-bytestructures                  ;needed when cross-compiling
            openssh
            git))
     (inputs
-     (list guile-3.0 libgit2 openssl zlib guile-bytestructures))
+     (list guile-3.0 libgit2))
+    (propagated-inputs
+     (list guile-bytestructures))
     (synopsis "Guile bindings for libgit2")
     (description
      "This package provides Guile bindings to libgit2, a library to
