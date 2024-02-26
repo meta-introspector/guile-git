@@ -50,7 +50,7 @@
            guile-3.0                              ;for 'guild compile'
            guile-bytestructures                  ;needed when cross-compiling
            openssh
-           git))
+           git-minimal))
     (inputs
      (list guile-3.0 libgit2))
     (propagated-inputs
